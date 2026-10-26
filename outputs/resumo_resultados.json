@@ -1,0 +1,58 @@
+{
+  "project": "SMT em Tempo",
+  "raw_rows": 2057,
+  "clean_rows": 2043,
+  "exact_duplicates_removed": 14,
+  "date_start": "2026-01-05",
+  "date_end": "2026-08-28",
+  "train_end": "2026-05-27",
+  "validation_end": "2026-07-15",
+  "splits": {
+    "teste": {
+      "records": 403,
+      "start": "2026-07-16",
+      "end": "2026-08-28"
+    },
+    "treino": {
+      "records": 1236,
+      "start": "2026-01-05",
+      "end": "2026-05-27"
+    },
+    "validacao": {
+      "records": 404,
+      "start": "2026-05-28",
+      "end": "2026-07-15"
+    }
+  },
+  "delayed_rate": 0.272148800783162,
+  "target_median": 34.7,
+  "target_mean": 35.901272638277035,
+  "best_regression": "Árvore prof. 7",
+  "test_mae": 2.655604076705895,
+  "reference_mae": 8.137096774193548,
+  "mae_reduction": 0.6736423136654797,
+  "test_r2": 0.8837097146575956,
+  "best_classifier": "Árvore prof. 4",
+  "test_accuracy": 0.890818858560794,
+  "test_precision": 0.7416666666666667,
+  "test_recall": 0.8725490196078431,
+  "test_f1": 0.8018018018018018,
+  "test_average_precision": 0.8796934624059947,
+  "true_negative": 270,
+  "false_positive": 31,
+  "false_negative": 13,
+  "true_positive": 89,
+  "model_features": [
+    "alimentadores_a_trocar",
+    "kit_preparado_pct",
+    "experiencia_operador_meses",
+    "componentes_novos",
+    "tamanho_lote_placas",
+    "linha_smt",
+    "muda_familia",
+    "turno"
+  ],
+  "excluded_after_event": [
+    "atraso_no_plano_min"
+  ]
+}

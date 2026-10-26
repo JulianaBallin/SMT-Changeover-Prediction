@@ -153,6 +153,7 @@ activemq-data/
 .env
 .envrc
 .venv
+.venv-smt-changeover/
 env/
 venv/
 ENV/

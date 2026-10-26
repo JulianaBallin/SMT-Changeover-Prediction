@@ -1,0 +1,38 @@
+﻿Etapa,Coluna,Quantidade
+Duplicatas exatas,(linha),14
+Espaços nas bordas,linha_smt,59
+Espaços nas bordas,muda_familia,65
+Espaços nas bordas,turno,67
+Grafias padronizadas,linha_smt,35
+Grafias padronizadas,muda_familia,57
+Grafias padronizadas,turno,69
+Vazios reconhecidos,id_registro,0
+Vazios reconhecidos,instante_previsao,0
+Vazios reconhecidos,data_operacao,0
+Vazios reconhecidos,linha_smt,0
+Vazios reconhecidos,muda_familia,0
+Vazios reconhecidos,turno,0
+Vazios reconhecidos,alimentadores_a_trocar,10
+Vazios reconhecidos,kit_preparado_pct,24
+Vazios reconhecidos,experiencia_operador_meses,100
+Vazios reconhecidos,componentes_novos,60
+Vazios reconhecidos,tamanho_lote_placas,20
+Vazios reconhecidos,tempo_troca_min,0
+Vazios reconhecidos,troca_demorada,0
+Vazios reconhecidos,atraso_no_plano_min,0
+Vírgulas decimais,alimentadores_a_trocar,38
+Vírgulas decimais,kit_preparado_pct,40
+Vírgulas decimais,experiencia_operador_meses,34
+Vírgulas decimais,componentes_novos,38
+Vírgulas decimais,tamanho_lote_placas,39
+Código 9999,alimentadores_a_trocar,4
+Código 9999,kit_preparado_pct,4
+Código 9999,experiencia_operador_meses,16
+Código 9999,componentes_novos,20
+Código 9999,tamanho_lote_placas,4
+Datas brasileiras,data_operacao,81
+Fora do critério,alimentadores_a_trocar,8
+Fora do critério,kit_preparado_pct,26
+Fora do critério,experiencia_operador_meses,8
+Fora do critério,componentes_novos,8
+Fora do critério,tamanho_lote_placas,8
