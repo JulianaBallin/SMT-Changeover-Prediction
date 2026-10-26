@@ -138,7 +138,14 @@ def cover_page(canvas, _doc) -> None:
 
     draw_image_contain(canvas, ASSET_DIR / "logo-uea.png", 45, height - 105, 150, 62)
     draw_image_contain(canvas, ASSET_DIR / "logo-sialabs.png", width - 115, height - 115, 70, 80)
-    draw_image_contain(canvas, ASSET_DIR / "logo-smt-em-tempo.png", width - 280, 500, 220, 170)
+    draw_image_contain(
+        canvas,
+        ASSET_DIR / "logo-smt-em-tempo.png",
+        width - 280,
+        500 - 2 * cm,
+        220,
+        170,
+    )
 
     canvas.setFont("NotoSans-Bold", 10)
     canvas.setFillColor(hex_color(YELLOW))
