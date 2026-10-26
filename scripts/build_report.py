@@ -141,7 +141,7 @@ def cover_page(canvas, _doc) -> None:
     draw_image_contain(
         canvas,
         ASSET_DIR / "logo-smt-em-tempo.png",
-        width - 280,
+        width - 280 - 1 * cm,
         500 - 2 * cm,
         220,
         170,

@@ -341,14 +341,13 @@ def slide_cover(prs: Presentation) -> None:
     """Build the presentation cover."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     set_background(slide, CREAM)
-    add_picture_opacity(
+    add_picture_contain(
         slide,
         ASSET_DIR / "logo-smt-em-tempo.png",
-        3.75,
-        2.35,
-        5.85,
-        3.70,
-        0.18,
+        4.45,
+        3.92,
+        4.43,
+        2.48,
     )
     add_picture_contain(slide, ASSET_DIR / "logo-uea.png", 10.45, 0.23, 1.15, 0.62)
     add_picture_contain(slide, ASSET_DIR / "logo-sialabs.png", 11.72, 0.19, 0.92, 0.68)
