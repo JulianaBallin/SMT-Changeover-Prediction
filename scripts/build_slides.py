@@ -1,4 +1,4 @@
-"""Build the cheerful ten-slide presentation for the SMT project."""
+"""Build the cheerful eleven-slide presentation for the SMT project."""
 
 # pylint: disable=line-too-long,too-many-arguments,too-many-positional-arguments
 # pylint: disable=too-many-locals,unused-argument,import-error
@@ -16,14 +16,25 @@ from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.util import Inches, Pt
 
-from analise import BLUE, CORAL, CREAM, GREEN, INK, LIGHT_BLUE, MINT, TEAL, YELLOW
+from smt_changeover.analysis import (
+    BLUE,
+    CORAL,
+    CREAM,
+    GREEN,
+    INK,
+    LIGHT_BLUE,
+    MINT,
+    TEAL,
+    YELLOW,
+)
 
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
 ASSET_DIR = PROJECT_DIR / "assets"
-CHART_DIR = PROJECT_DIR / "graficos"
+CHART_DIR = PROJECT_DIR / "outputs" / "charts"
+PREVIEW_DIR = PROJECT_DIR / "outputs" / "previews"
 OUTPUT = PROJECT_DIR / "docs" / "apresentacao" / "apresentacao_smt_em_tempo.pptx"
-SUMMARY_PATH = PROJECT_DIR / "outputs" / "resumo_resultados.json"
+SUMMARY_PATH = PROJECT_DIR / "outputs" / "metrics" / "resumo_resultados.json"
 FONT = "Noto Sans"
 TOTAL_SLIDES = 11
 
@@ -622,7 +633,7 @@ def slide_notebook(prs: Presentation) -> None:
     set_background(slide, TEAL)
     add_doodles(slide, 1, dark=True)
     add_header(slide, "08", "Demonstração do notebook", color=CREAM)
-    preview = ASSET_DIR / "preview-notebook.png"
+    preview = PREVIEW_DIR / "preview-notebook.png"
     add_card(slide, 0.62, 1.10, 8.05, 5.67, color="#FFFFFF")
     add_picture_contain(slide, preview, 0.74, 1.23, 7.81, 5.42)
     callouts = [
@@ -679,9 +690,9 @@ def slide_deliverables(prs: Presentation) -> None:
             align=PP_ALIGN.CENTER,
         )
 
-    add_picture_contain(slide, ASSET_DIR / "preview-notebook.png", 1.02, 3.35, 2.88, 2.10)
+    add_picture_contain(slide, PREVIEW_DIR / "preview-notebook.png", 1.02, 3.35, 2.88, 2.10)
     add_picture_contain(slide, ASSET_DIR / "logo-smt-em-tempo.png", 5.29, 3.25, 2.08, 2.08)
-    add_picture_contain(slide, ASSET_DIR / "preview-relatorio.png", 9.43, 3.18, 1.54, 2.18)
+    add_picture_contain(slide, PREVIEW_DIR / "preview-relatorio.png", 9.43, 3.18, 1.54, 2.18)
 
     add_card(slide, 9.36, 5.62, 1.70, 0.44, color=YELLOW)
     add_text(

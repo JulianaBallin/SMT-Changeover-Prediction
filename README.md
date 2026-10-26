@@ -37,14 +37,14 @@ Equipe:
 | [apresentacao_smt_em_tempo.pptx](docs/apresentacao/apresentacao_smt_em_tempo.pptx) | Apresentação editável de onze slides |
 | [apresentacao_smt_em_tempo.pdf](docs/apresentacao/apresentacao_smt_em_tempo.pdf) | Versão da apresentação para visualização e compartilhamento |
 | [relatorio_tecnico_smt_em_tempo.pdf](docs/relatorio/relatorio_tecnico_smt_em_tempo.pdf) | Relatório técnico detalhado em formato A4, material bônus |
-| [N4_TrocaSMT.csv](dataset/N4_TrocaSMT.csv) | Base bruta preservada |
-| [N4_TrocaSMT_limpo.csv](dataset/N4_TrocaSMT_limpo.csv) | Base resultante do pipeline reproduzível |
+| [N4_TrocaSMT.csv](dataset/raw/N4_TrocaSMT.csv) | Base original preservada sem alterações |
+| [N4_TrocaSMT_limpo.csv](dataset/processed/N4_TrocaSMT_limpo.csv) | Base resultante do pipeline reproduzível |
 | [logo-smt-em-tempo.png](assets/logo-smt-em-tempo.png) | Identidade visual da linha SMT com relógio ao fundo |
 
 ## Execução no Google Colab
 
 1. Use o botão **Abrir no Colab** no início deste README.
-2. Faça upload do CSV bruto disponível em `dataset/N4_TrocaSMT.csv` quando solicitado.
+2. Faça upload do CSV bruto disponível em `dataset/raw/N4_TrocaSMT.csv` quando solicitado.
 3. Selecione **Ambiente de execução > Executar tudo**.
 4. Consulte as métricas finais e os arquivos exportados na última célula.
 
@@ -56,23 +56,30 @@ A árvore de regressão alcançou MAE de 2,66 minutos, redução de 67,4% frente
 
 ## Estrutura
 
+Os dados originais permanecem isolados em `dataset/raw`. Bases limpas, auditorias, divisões e previsões ficam em `dataset/processed`. Gráficos, métricas e prévias geradas ficam em `outputs`. O código necessário para reproduzir a análise permanece versionado em `src` e os geradores dos documentos ficam em `scripts`.
+
 ```text
 SMT-Changeover-Prediction/
-├── assets/                  # Logo, ilustrações e prévias
-├── dataset/                 # Bases bruta e limpa
+├── assets/                  # Logo e ilustrações estáticas
+├── dataset/
+│   ├── raw/                 # Base original preservada
+│   └── processed/           # Bases limpas, auditorias e previsões
 ├── docs/
 │   ├── apresentacao/        # Slides editáveis e PDF
 │   └── relatorio/           # Relatório técnico bônus
-├── fontes/                  # Scripts reproduzíveis
-├── graficos/                # Figuras usadas nos documentos
-├── outputs/                 # Auditorias, métricas e previsões
+├── outputs/
+│   ├── charts/              # Gráficos produzidos pela análise
+│   ├── metrics/             # Resumo das métricas finais
+│   └── previews/            # Prévias usadas na apresentação
+├── scripts/                 # Geração do notebook e dos documentos
+├── src/smt_changeover/      # Pipeline reproduzível de análise
 ├── tests/                   # Testes do contrato analítico
 └── smt_changeover_prediction.ipynb
 ```
 
 ## Regeneração local
 
-As fontes exigem Python 3.12 ou compatível, LibreOffice, Google Chrome ou Chromium e as dependências de [requirements.txt](requirements.txt).
+A regeneração exige Python 3.12 ou compatível, LibreOffice, Google Chrome ou Chromium e as dependências de [requirements.txt](requirements.txt).
 
 ```bash
 make menu

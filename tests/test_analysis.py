@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from fontes.analise import (
+from smt_changeover.analysis import (
     CLASSIFICATION_TARGET,
     REGRESSION_TARGET,
     VALID_RANGES,

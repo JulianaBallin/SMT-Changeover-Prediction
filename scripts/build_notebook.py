@@ -68,10 +68,16 @@ def build_notebook() -> None:
             """
             from pathlib import Path
             import json
+            import sys
             import pandas as pd
             from IPython.display import Image, display
 
-            from fontes.analise import (
+            PROJECT_DIR = Path.cwd()
+            SRC_DIR = PROJECT_DIR / "src"
+            if str(SRC_DIR) not in sys.path:
+                sys.path.insert(0, str(SRC_DIR))
+
+            from smt_changeover.analysis import (
                 CATEGORICAL_FEATURES,
                 FEATURES,
                 NUMERIC_FEATURES,
@@ -85,7 +91,6 @@ def build_notebook() -> None:
 
             pd.set_option("display.max_columns", 30)
             pd.set_option("display.precision", 3)
-            PROJECT_DIR = Path.cwd()
             print("Pasta do projeto:", PROJECT_DIR)
             """
         ),
@@ -186,7 +191,7 @@ def build_notebook() -> None:
         ),
         code(
             """
-            display(Image(filename="graficos/01_distribuicao_tempo.png", width=850))
+            display(Image(filename="outputs/charts/01_distribuicao_tempo.png", width=850))
             """
         ),
         markdown(
@@ -196,8 +201,8 @@ def build_notebook() -> None:
         ),
         code(
             """
-            display(Image(filename="graficos/02_relacoes_principais.png", width=980))
-            display(Image(filename="graficos/03_risco_por_kit_e_familia.png", width=900))
+            display(Image(filename="outputs/charts/02_relacoes_principais.png", width=980))
+            display(Image(filename="outputs/charts/03_risco_por_kit_e_familia.png", width=900))
             """
         ),
         markdown(
@@ -252,8 +257,8 @@ def build_notebook() -> None:
         ),
         code(
             """
-            display(Image(filename="graficos/04_comparacao_regressao.png", width=850))
-            display(Image(filename="graficos/05_previsto_vs_observado.png", width=620))
+            display(Image(filename="outputs/charts/04_comparacao_regressao.png", width=850))
+            display(Image(filename="outputs/charts/05_previsto_vs_observado.png", width=620))
             """
         ),
         markdown(
@@ -283,8 +288,8 @@ def build_notebook() -> None:
         ),
         code(
             """
-            display(Image(filename="graficos/06_matriz_confusao.png", width=620))
-            display(Image(filename="graficos/07_importancia_caracteristicas.png", width=760))
+            display(Image(filename="outputs/charts/06_matriz_confusao.png", width=620))
+            display(Image(filename="outputs/charts/07_importancia_caracteristicas.png", width=760))
             """
         ),
         markdown(

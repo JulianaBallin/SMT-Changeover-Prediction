@@ -34,7 +34,7 @@ from reportlab.platypus import (
 )
 from reportlab.platypus.tableofcontents import TableOfContents
 
-from analise import (
+from smt_changeover.analysis import (
     CORAL,
     CREAM,
     FEATURES,
@@ -54,8 +54,9 @@ from analise import (
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
 ASSET_DIR = PROJECT_DIR / "assets"
-CHART_DIR = PROJECT_DIR / "graficos"
-OUTPUT_DIR = PROJECT_DIR / "outputs"
+CHART_DIR = PROJECT_DIR / "outputs" / "charts"
+PROCESSED_DATA_DIR = PROJECT_DIR / "dataset" / "processed"
+METRICS_DIR = PROJECT_DIR / "outputs" / "metrics"
 OUTPUT = PROJECT_DIR / "docs" / "relatorio" / "relatorio_tecnico_smt_em_tempo.pdf"
 FONT_DIR = Path("/usr/share/fonts/truetype/noto")
 CONTENT_WIDTH = A4[0] - 3.3 * cm
@@ -446,15 +447,23 @@ def metric_cards(summary: dict, styles: dict[str, ParagraphStyle]) -> Table:
 
 def load_context():
     """Load saved results and recreate compact descriptive tables."""
-    summary = json.loads((OUTPUT_DIR / "resumo_resultados.json").read_text(encoding="utf-8"))
+    summary = json.loads(
+        (METRICS_DIR / "resumo_resultados.json").read_text(encoding="utf-8")
+    )
     raw = read_raw_data()
     data, audit, suspicious, quality = clean_data(raw)
     split, _, _ = temporal_split(data)
     train = data.loc[split.eq("treino")].copy()
-    regression_validation = pd.read_csv(OUTPUT_DIR / "N4_regressao_validacao.csv")
-    regression_test = pd.read_csv(OUTPUT_DIR / "N4_regressao_teste.csv")
-    classification_validation = pd.read_csv(OUTPUT_DIR / "N4_classificacao_validacao.csv")
-    classification_test = pd.read_csv(OUTPUT_DIR / "N4_classificacao_teste.csv")
+    regression_validation = pd.read_csv(
+        PROCESSED_DATA_DIR / "N4_regressao_validacao.csv"
+    )
+    regression_test = pd.read_csv(PROCESSED_DATA_DIR / "N4_regressao_teste.csv")
+    classification_validation = pd.read_csv(
+        PROCESSED_DATA_DIR / "N4_classificacao_validacao.csv"
+    )
+    classification_test = pd.read_csv(
+        PROCESSED_DATA_DIR / "N4_classificacao_teste.csv"
+    )
 
     group_summary = (
         train.groupby("muda_familia")["tempo_troca_min"]
@@ -1059,9 +1068,9 @@ def build_story(context: dict, styles: dict[str, ParagraphStyle]):
                 [
                     ["Arquivo", "Finalidade"],
                     ["smt_changeover_prediction.ipynb", "análise executada com explicações"],
-                    ["fontes/analise.py", "limpeza, treino, avaliação e gráficos"],
-                    ["dataset/N4_TrocaSMT_limpo.csv", "base limpa sem imputação dos alvos"],
-                    ["outputs/N4_previsoes_teste.csv", "previsões finais e probabilidades"],
+                    ["src/smt_changeover/analysis.py", "limpeza, treino, avaliação e gráficos"],
+                    ["dataset/processed/N4_TrocaSMT_limpo.csv", "base limpa sem imputação dos alvos"],
+                    ["dataset/processed/N4_previsoes_teste.csv", "previsões finais e probabilidades"],
                     ["docs/apresentacao", "slides em PPTX e PDF"],
                     ["docs/relatorio", "relatório técnico em PDF"],
                 ],

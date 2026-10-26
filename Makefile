@@ -4,6 +4,7 @@ PYTHON ?= python3
 ENV_DIR := .venv-smt-changeover
 ENV_PYTHON := $(ENV_DIR)/bin/python
 ENV_JUPYTER := $(ENV_DIR)/bin/jupyter
+export PYTHONPATH := $(CURDIR)/src
 
 .PHONY: menu setup analyze notebook preview report-preview slides report all test lint
 
@@ -37,29 +38,31 @@ setup:
 	@echo "Ambiente pronto. Para ativar: source $(ENV_DIR)/bin/activate"
 
 analyze:
-	$(ENV_PYTHON) fontes/analise.py
+	$(ENV_PYTHON) -m smt_changeover.analysis
 
 notebook: analyze
-	$(ENV_PYTHON) fontes/gerar_notebook.py
+	$(ENV_PYTHON) scripts/build_notebook.py
 	$(ENV_JUPYTER) nbconvert --to notebook --execute --inplace smt_changeover_prediction.ipynb --ExecutePreprocessor.timeout=600
 
 preview: notebook
 	@tmp_dir=$$(mktemp -d /tmp/smt-notebook-XXXXXX); \
+	mkdir -p outputs/previews; \
 	$(ENV_JUPYTER) nbconvert --to html smt_changeover_prediction.ipynb --output notebook.html --output-dir "$$tmp_dir" >/dev/null; \
 	google-chrome --headless=new --no-sandbox --disable-gpu --hide-scrollbars --window-size=1500,1000 \
-		--screenshot=assets/preview-notebook.png "file://$$tmp_dir/notebook.html" >/dev/null 2>&1
+		--screenshot=outputs/previews/preview-notebook.png "file://$$tmp_dir/notebook.html" >/dev/null 2>&1
 
 report-preview: report
-	pdftoppm -png -f 1 -singlefile -r 110 docs/relatorio/relatorio_tecnico_smt_em_tempo.pdf assets/preview-relatorio >/dev/null 2>&1
+	@mkdir -p outputs/previews
+	pdftoppm -png -f 1 -singlefile -r 110 docs/relatorio/relatorio_tecnico_smt_em_tempo.pdf outputs/previews/preview-relatorio >/dev/null 2>&1
 
 slides: preview report-preview
-	$(ENV_PYTHON) fontes/gerar_slides.py
+	$(ENV_PYTHON) scripts/build_slides.py
 	@lo_profile=$$(mktemp -d /tmp/lo-smt-slides-XXXXXX); \
 	libreoffice -env:UserInstallation="file://$$lo_profile" --headless --convert-to pdf \
 		--outdir docs/apresentacao docs/apresentacao/apresentacao_smt_em_tempo.pptx
 
 report: analyze
-	$(ENV_PYTHON) fontes/gerar_relatorio.py
+	$(ENV_PYTHON) scripts/build_report.py
 
 all: slides test
 
@@ -67,4 +70,4 @@ test:
 	$(ENV_PYTHON) -m pytest -q
 
 lint:
-	$(ENV_PYTHON) -m pylint fontes tests
+	$(ENV_PYTHON) -m pylint src scripts tests

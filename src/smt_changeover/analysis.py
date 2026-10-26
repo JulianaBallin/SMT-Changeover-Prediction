@@ -34,10 +34,11 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 
-PROJECT_DIR = Path(__file__).resolve().parents[1]
-DATASET_PATH = PROJECT_DIR / "dataset" / "N4_TrocaSMT.csv"
-OUTPUT_DIR = PROJECT_DIR / "outputs"
-CHART_DIR = PROJECT_DIR / "graficos"
+PROJECT_DIR = Path(__file__).resolve().parents[2]
+DATASET_PATH = PROJECT_DIR / "dataset" / "raw" / "N4_TrocaSMT.csv"
+PROCESSED_DATA_DIR = PROJECT_DIR / "dataset" / "processed"
+CHART_DIR = PROJECT_DIR / "outputs" / "charts"
+METRICS_DIR = PROJECT_DIR / "outputs" / "metrics"
 
 NUMERIC_FEATURES = [
     "alimentadores_a_trocar",
@@ -679,8 +680,9 @@ def save_outputs(
     results: dict[str, Any],
 ) -> dict[str, Any]:
     """Persist cleaned data, diagnostics, predictions, and a compact summary."""
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    clean_path = PROJECT_DIR / "dataset" / "N4_TrocaSMT_limpo.csv"
+    PROCESSED_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    METRICS_DIR.mkdir(parents=True, exist_ok=True)
+    clean_path = PROCESSED_DATA_DIR / "N4_TrocaSMT_limpo.csv"
     clean_export = data.copy()
     clean_export["data_operacao"] = clean_export["data_operacao"].dt.strftime(
         "%Y-%m-%d"
@@ -689,32 +691,42 @@ def save_outputs(
 
     division_map = data[["id_registro", "data_operacao"]].copy()
     division_map["divisao"] = split
-    division_map.to_csv(OUTPUT_DIR / "N4_divisoes.csv", index=False, encoding="utf-8-sig")
-    audit.to_csv(OUTPUT_DIR / "N4_registro_limpeza.csv", index=False, encoding="utf-8-sig")
-    suspicious.to_csv(
-        OUTPUT_DIR / "N4_medidas_para_conferencia.csv",
+    division_map.to_csv(
+        PROCESSED_DATA_DIR / "N4_divisoes.csv", index=False, encoding="utf-8-sig"
+    )
+    audit.to_csv(
+        PROCESSED_DATA_DIR / "N4_registro_limpeza.csv",
         index=False,
         encoding="utf-8-sig",
     )
-    quality.to_csv(OUTPUT_DIR / "N4_qualidade.csv", encoding="utf-8-sig")
+    suspicious.to_csv(
+        PROCESSED_DATA_DIR / "N4_medidas_para_conferencia.csv",
+        index=False,
+        encoding="utf-8-sig",
+    )
+    quality.to_csv(PROCESSED_DATA_DIR / "N4_qualidade.csv", encoding="utf-8-sig")
     results["regression_validation"].to_csv(
-        OUTPUT_DIR / "N4_regressao_validacao.csv", index=False, encoding="utf-8-sig"
+        PROCESSED_DATA_DIR / "N4_regressao_validacao.csv",
+        index=False,
+        encoding="utf-8-sig",
     )
     results["regression_test"].to_csv(
-        OUTPUT_DIR / "N4_regressao_teste.csv", index=False, encoding="utf-8-sig"
+        PROCESSED_DATA_DIR / "N4_regressao_teste.csv",
+        index=False,
+        encoding="utf-8-sig",
     )
     results["classification_validation"].to_csv(
-        OUTPUT_DIR / "N4_classificacao_validacao.csv",
+        PROCESSED_DATA_DIR / "N4_classificacao_validacao.csv",
         index=False,
         encoding="utf-8-sig",
     )
     results["classification_test"].to_csv(
-        OUTPUT_DIR / "N4_classificacao_teste.csv",
+        PROCESSED_DATA_DIR / "N4_classificacao_teste.csv",
         index=False,
         encoding="utf-8-sig",
     )
     results["regression_importance"].to_csv(
-        OUTPUT_DIR / "N4_importancia_regressao.csv",
+        PROCESSED_DATA_DIR / "N4_importancia_regressao.csv",
         index=False,
         encoding="utf-8-sig",
     )
@@ -736,7 +748,9 @@ def save_outputs(
         "classification_probabilities"
     ][best_classification_name]
     prediction_table.to_csv(
-        OUTPUT_DIR / "N4_previsoes_teste.csv", index=False, encoding="utf-8-sig"
+        PROCESSED_DATA_DIR / "N4_previsoes_teste.csv",
+        index=False,
+        encoding="utf-8-sig",
     )
 
     regression_test = results["regression_test"].set_index("Modelo")
@@ -791,7 +805,7 @@ def save_outputs(
         "model_features": FEATURES,
         "excluded_after_event": LEAKAGE_COLUMNS,
     }
-    summary_path = OUTPUT_DIR / "resumo_resultados.json"
+    summary_path = METRICS_DIR / "resumo_resultados.json"
     summary_path.write_text(
         json.dumps(_json_ready(summary), ensure_ascii=False, indent=2),
         encoding="utf-8",
