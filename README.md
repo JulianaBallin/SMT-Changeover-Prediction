@@ -34,7 +34,7 @@ Equipe:
 | Arquivo | Finalidade |
 | --- | --- |
 | [smt_changeover_prediction.ipynb](smt_changeover_prediction.ipynb) | Notebook executado com limpeza, exploração, regressão e classificação |
-| [apresentacao_smt_em_tempo.pptx](docs/apresentacao/apresentacao_smt_em_tempo.pptx) | Apresentação editável de onze slides |
+| [apresentacao_smt_em_tempo.pptx](docs/apresentacao/apresentacao_smt_em_tempo.pptx) | Apresentação editável de treze slides |
 | [apresentacao_smt_em_tempo.pdf](docs/apresentacao/apresentacao_smt_em_tempo.pdf) | Versão da apresentação para visualização e compartilhamento |
 | [relatorio_tecnico_smt_em_tempo.pdf](docs/relatorio/relatorio_tecnico_smt_em_tempo.pdf) | Relatório técnico detalhado em formato A4, material bônus |
 | [N4_TrocaSMT.csv](dataset/raw/N4_TrocaSMT.csv) | Base original preservada sem alterações |

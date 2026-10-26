@@ -1,6 +1,6 @@
 """Build the cheerful eleven-slide presentation for the SMT project."""
 
-# pylint: disable=line-too-long,too-many-arguments,too-many-positional-arguments
+# pylint: disable=line-too-long,too-many-lines,too-many-arguments,too-many-positional-arguments
 # pylint: disable=too-many-locals,unused-argument,import-error,protected-access
 
 from __future__ import annotations
@@ -36,7 +36,7 @@ PREVIEW_DIR = PROJECT_DIR / "outputs" / "previews"
 OUTPUT = PROJECT_DIR / "docs" / "apresentacao" / "apresentacao_smt_em_tempo.pptx"
 SUMMARY_PATH = PROJECT_DIR / "outputs" / "metrics" / "resumo_resultados.json"
 FONT = "Noto Sans"
-TOTAL_SLIDES = 11
+TOTAL_SLIDES = 13
 
 
 def rgb(color: str) -> RGBColor:
@@ -849,6 +849,156 @@ def slide_conclusion(prs: Presentation) -> None:
     add_footer(slide, 11)
 
 
+def slide_final_answers(prs: Presentation, summary: dict) -> None:
+    """Answer the two project questions with the final test evidence."""
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    set_background(slide, CREAM)
+    add_doodles(slide, 0)
+    add_header(slide, "11", "Respostas às perguntas")
+
+    mae = f"{summary['test_mae']:.2f}".replace(".", ",")
+    reduction = f"{summary['mae_reduction'] * 100:.1f}".replace(".", ",")
+    r_squared = f"{summary['test_r2']:.3f}".replace(".", ",")
+    recall = f"{summary['test_recall'] * 100:.1f}".replace(".", ",")
+    precision = f"{summary['test_precision'] * 100:.1f}".replace(".", ",")
+    delayed_found = summary["true_positive"]
+    delayed_total = summary["true_positive"] + summary["false_negative"]
+
+    add_card(slide, 0.70, 1.20, 5.85, 4.85, color=LIGHT_BLUE, line="#A9D8E8")
+    add_shape(slide, MSO_SHAPE.RECTANGLE, 1.08, 1.52, 5.09, 0.055, BLUE)
+    add_text(slide, "PERGUNTA 1", 1.08, 1.70, 5.09, 0.24, size=10, color=BLUE, bold=True, align=PP_ALIGN.CENTER)
+    add_text(
+        slide,
+        "Quantos minutos a troca deve levar?",
+        1.10,
+        2.02,
+        5.05,
+        0.60,
+        size=20,
+        color=TEAL,
+        bold=True,
+        align=PP_ALIGN.CENTER,
+    )
+    add_text(
+        slide,
+        "A duração é estimada para cada troca com os dados disponíveis antes da parada.",
+        1.12,
+        2.82,
+        5.01,
+        0.68,
+        size=14.5,
+        color=INK,
+        align=PP_ALIGN.CENTER,
+        valign=MSO_ANCHOR.MIDDLE,
+    )
+    add_text(slide, f"{mae} min", 1.12, 3.72, 5.01, 0.55, size=30, color=TEAL, bold=True, align=PP_ALIGN.CENTER)
+    add_text(slide, "erro médio no período de teste", 1.12, 4.32, 5.01, 0.30, size=12.5, color=INK, align=PP_ALIGN.CENTER)
+    add_card(slide, 1.10, 4.88, 2.32, 0.78, color="#FFFFFF", line=MINT)
+    add_text(slide, f"{reduction}%", 1.22, 5.04, 2.08, 0.30, size=18, color=CORAL, bold=True, align=PP_ALIGN.CENTER)
+    add_text(slide, "menos erro", 1.22, 5.35, 2.08, 0.20, size=9.5, color=INK, align=PP_ALIGN.CENTER)
+    add_card(slide, 3.82, 4.88, 2.32, 0.78, color="#FFFFFF", line=MINT)
+    add_text(slide, f"R² {r_squared}", 3.94, 5.04, 2.08, 0.30, size=18, color=BLUE, bold=True, align=PP_ALIGN.CENTER)
+    add_text(slide, "variação explicada", 3.94, 5.35, 2.08, 0.20, size=9.5, color=INK, align=PP_ALIGN.CENTER)
+
+    add_card(slide, 6.78, 1.20, 5.85, 4.85, color="#F8D2C8", line="#F0B7A9")
+    add_shape(slide, MSO_SHAPE.RECTANGLE, 7.16, 1.52, 5.09, 0.055, CORAL)
+    add_text(slide, "PERGUNTA 2", 7.16, 1.70, 5.09, 0.24, size=10, color=CORAL, bold=True, align=PP_ALIGN.CENTER)
+    add_text(
+        slide,
+        "A troca deve passar de 42 minutos?",
+        7.18,
+        2.02,
+        5.05,
+        0.60,
+        size=20,
+        color=TEAL,
+        bold=True,
+        align=PP_ALIGN.CENTER,
+    )
+    add_text(
+        slide,
+        f"O modelo sinaliza o risco antes da parada, com recall de {recall}% e precisão de {precision}%.",
+        7.20,
+        2.82,
+        5.01,
+        0.68,
+        size=14.5,
+        color=INK,
+        align=PP_ALIGN.CENTER,
+        valign=MSO_ANCHOR.MIDDLE,
+    )
+    add_text(slide, f"{delayed_found} de {delayed_total}", 7.20, 3.72, 5.01, 0.55, size=30, color=TEAL, bold=True, align=PP_ALIGN.CENTER)
+    add_text(slide, "trocas demoradas encontradas", 7.20, 4.32, 5.01, 0.30, size=12.5, color=INK, align=PP_ALIGN.CENTER)
+    add_card(slide, 7.18, 4.88, 2.32, 0.78, color="#FFFFFF", line=MINT)
+    add_text(slide, str(summary["false_negative"]), 7.30, 5.04, 2.08, 0.30, size=18, color=CORAL, bold=True, align=PP_ALIGN.CENTER)
+    add_text(slide, "casos perdidos", 7.30, 5.35, 2.08, 0.20, size=9.5, color=INK, align=PP_ALIGN.CENTER)
+    add_card(slide, 9.90, 4.88, 2.32, 0.78, color="#FFFFFF", line=MINT)
+    add_text(slide, str(summary["false_positive"]), 10.02, 5.04, 2.08, 0.30, size=18, color=BLUE, bold=True, align=PP_ALIGN.CENTER)
+    add_text(slide, "falsos alarmes", 10.02, 5.35, 2.08, 0.20, size=9.5, color=INK, align=PP_ALIGN.CENTER)
+
+    add_card(slide, 1.20, 6.28, 10.93, 0.60, color=TEAL)
+    add_text(
+        slide,
+        "Os modelos permitem priorizar apoio antes da troca, com decisão humana e acompanhamento contínuo.",
+        1.48,
+        6.43,
+        10.37,
+        0.30,
+        size=14,
+        color=CREAM,
+        bold=True,
+        align=PP_ALIGN.CENTER,
+    )
+    add_footer(slide, 12)
+
+
+def slide_thanks(prs: Presentation) -> None:
+    """Close the deck with a concise thank-you slide."""
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    set_background(slide, TEAL)
+    add_picture_contain(slide, ASSET_DIR / "logo-uea.png", 10.45, 0.23, 1.15, 0.62)
+    add_picture_contain(slide, ASSET_DIR / "logo-sialabs.png", 11.72, 0.19, 0.92, 0.68)
+    add_text(
+        slide,
+        "Agradecemos a atenção",
+        1.55,
+        1.02,
+        10.23,
+        0.70,
+        size=32,
+        color=CREAM,
+        bold=True,
+        align=PP_ALIGN.CENTER,
+    )
+    add_shape(slide, MSO_SHAPE.RECTANGLE, 5.23, 1.92, 2.87, 0.055, YELLOW)
+    add_picture_contain(slide, ASSET_DIR / "logo-smt-em-tempo.png", 5.13, 2.20, 3.07, 2.70)
+    add_text(slide, "Perguntas?", 3.65, 5.08, 6.03, 0.52, size=24, color=CREAM, bold=True, align=PP_ALIGN.CENTER)
+    add_text(
+        slide,
+        "SMT em Tempo · Projeto 4 · Machine Learning",
+        3.13,
+        5.68,
+        7.07,
+        0.30,
+        size=13,
+        color=MINT,
+        align=PP_ALIGN.CENTER,
+    )
+    add_text(
+        slide,
+        "Juliana Ballin Lima · Fernanda de Oliveira da Costa · Pedro Henrique Oliveira Dias",
+        2.22,
+        6.33,
+        8.89,
+        0.30,
+        size=11,
+        color=CREAM,
+        bold=True,
+        align=PP_ALIGN.CENTER,
+    )
+    add_footer(slide, 13, color=CREAM)
+
+
 def build_presentation() -> None:
     """Create and save the full deck."""
     summary = json.loads(SUMMARY_PATH.read_text(encoding="utf-8"))
@@ -867,6 +1017,8 @@ def build_presentation() -> None:
     slide_notebook(presentation)
     slide_deliverables(presentation)
     slide_conclusion(presentation)
+    slide_final_answers(presentation, summary)
+    slide_thanks(presentation)
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     presentation.save(OUTPUT)
