@@ -353,6 +353,72 @@ def build_notebook() -> None:
             print("Entregáveis analíticos atualizados.")
             """
         ),
+        markdown(
+            """
+            ## 12. Respostas finais às perguntas do projeto
+
+            A análise partiu de 2.057 registros e preservou 2.043 após a remoção de 14 duplicatas exatas. Na base limpa, o tempo médio foi de **35,90 minutos**, a mediana foi de **34,70 minutos** e **27,2%** das trocas ultrapassaram 42 minutos.
+
+            ### 1. Quantos minutos a troca deve levar?
+
+            Não existe um único tempo correto para todas as trocas. A resposta é a previsão individual produzida pela árvore de regressão a partir das oito informações conhecidas antes de a linha parar.
+
+            Nos **403 registros de teste**, a árvore de profundidade 7 apresentou:
+
+            - **MAE de 2,66 minutos**, ou seja, diferença absoluta média de 2,66 minutos entre o tempo previsto e o observado;
+            - **R² de 0,884**, indicando que o modelo explica 88,4% da variação observada nesse período;
+            - redução de **67,4% no erro** em comparação com a referência pela mediana, cujo MAE foi de 8,14 minutos.
+
+            Portanto, para uma nova troca, a coluna `tempo_previsto_min` é a resposta estimada. O MAE resume o erro médio observado no teste e não deve ser interpretado como margem garantida para cada caso.
+
+            ### 2. A troca deve ultrapassar 42 minutos?
+
+            A árvore de classificação responde **Sim** quando identifica risco acima do limite operacional e **Não** nos demais casos. Entre as **102 trocas realmente demoradas** no teste:
+
+            - **89** foram identificadas corretamente;
+            - **13** não foram detectadas;
+            - **31** trocas abaixo do limite geraram falso alarme;
+            - o `recall` foi de **87,3%**, a precisão de **74,2%** e o F1 de **80,2%**.
+
+            Assim, o modelo encontra a maior parte das trocas demoradas e pode orientar a priorização do apoio. Ele não substitui a decisão do supervisor, pois ainda existem casos perdidos e falsos alarmes.
+
+            ### Conclusão operacional
+
+            Os resultados respondem positivamente à pergunta central do projeto: os dados disponíveis antes da troca contêm informação suficiente para estimar a duração e antecipar o risco. A aplicação recomendada é ordenar as próximas trocas pela probabilidade de atraso, consultar o tempo estimado e direcionar primeiro o apoio humano para os maiores riscos.
+
+            Como a base é sintética, a decisão de uso real depende de uma validação com dados observados na fábrica e de acompanhamento contínuo dos erros.
+            """
+        ),
+        code(
+            """
+            respostas_finais = pd.DataFrame(
+                [
+                    {
+                        "Pergunta": "Quantos minutos a troca deve levar?",
+                        "Resposta baseada no teste": (
+                            f"Mediana observada de {resumo['target_median']:.1f} min; "
+                            f"previsão individual com MAE de {resumo['test_mae']:.2f} min "
+                            f"e R² de {resumo['test_r2']:.3f}."
+                        ),
+                    },
+                    {
+                        "Pergunta": "A troca deve ultrapassar 42 minutos?",
+                        "Resposta baseada no teste": (
+                            f"Na base, {100 * resumo['delayed_rate']:.1f}% ultrapassaram o limite. "
+                            f"O modelo encontrou {resumo['true_positive']} das "
+                            f"{resumo['true_positive'] + resumo['false_negative']} trocas demoradas, "
+                            f"com recall de {100 * resumo['test_recall']:.1f}%."
+                        ),
+                    },
+                ]
+            )
+            display(
+                respostas_finais.style.hide(axis="index").set_properties(
+                    **{"white-space": "normal", "text-align": "left"}
+                )
+            )
+            """
+        ),
     ]
     nbf.write(notebook, OUTPUT)
     print(f"Notebook criado em: {OUTPUT}")
