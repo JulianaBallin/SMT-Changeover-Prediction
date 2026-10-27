@@ -116,6 +116,7 @@ def build_notebook() -> None:
         ),
         code(
             """
+            # Carrega a base original sem alterá-la.
             bruto = read_raw_data()
             print("Dimensão recebida:", bruto.shape)
             display(bruto.head(6))
@@ -132,6 +133,7 @@ def build_notebook() -> None:
         ),
         code(
             """
+            # Limpa a base e registra cada correção.
             dados, registro_limpeza, suspeitas, qualidade = clean_data(bruto)
 
             print("Linhas antes:", len(bruto))
@@ -164,6 +166,7 @@ def build_notebook() -> None:
         ),
         code(
             """
+            # Separa passado, período de escolha e futuro.
             divisao, fim_treino, fim_validacao = temporal_split(dados)
             resumo_divisoes = (
                 pd.DataFrame({"data": dados["data_operacao"], "divisao": divisao})
@@ -175,6 +178,17 @@ def build_notebook() -> None:
         ),
         markdown(
             """
+            ### Como cada divisão é usada
+
+            - **Treino:** aprende as regras dos modelos.
+            - **Validação:** escolhe o modelo e a profundidade.
+            - **Teste:** mede o resultado final em dados mais recentes.
+
+            O teste não participa das escolhas.
+            """
+        ),
+        markdown(
+            """
             ## 5. Exploração somente no treino
 
             A classe 1 significa tempo acima de 42 minutos. O limite define o problema operacional e não um erro de dados.
@@ -182,6 +196,7 @@ def build_notebook() -> None:
         ),
         code(
             """
+            # Explora apenas o treino para não antecipar o futuro.
             treino = dados.loc[divisao.eq("treino")]
             distribuicao = treino["troca_demorada"].value_counts().sort_index().to_frame("Registros")
             distribuicao["Porcentagem"] = 100 * distribuicao["Registros"] / len(treino)
@@ -232,6 +247,7 @@ def build_notebook() -> None:
         ),
         code(
             """
+            # Confere quais colunas entram no pipeline.
             print("Entradas do modelo:")
             for coluna in FEATURES:
                 print("-", coluna)
@@ -247,11 +263,33 @@ def build_notebook() -> None:
         ),
         code(
             """
+            # Treina no treino e compara os candidatos na validação.
             resultados = train_and_evaluate(dados, divisao)
+            """
+        ),
+        markdown(
+            """
+            ### 7.1 Escolha na validação
 
-            print("Melhores resultados de validação:")
+            Menor MAE indica menor erro médio. O teste continua reservado.
+            """
+        ),
+        code(
+            """
+            # Mostra os candidatos ordenados pelo MAE.
             display(resultados["regression_validation"].head(6).round(3))
-            print("Resultado final no teste:")
+            """
+        ),
+        markdown(
+            """
+            ### 7.2 Conferência no teste
+
+            Após a escolha, treino e validação são reunidos. O teste mede o resultado final.
+            """
+        ),
+        code(
+            """
+            # Compara o modelo escolhido com referências no teste.
             display(resultados["regression_test"].round(3))
             """
         ),
@@ -277,12 +315,30 @@ def build_notebook() -> None:
             A referência prevê sempre a classe mais comum. Também comparamos regressão logística e árvores de profundidade 2 a 10. Como perder uma troca demorada pode deixar a linha sem apoio, observamos `recall`, mas escolhemos a árvore pelo melhor F1 na validação para equilibrar casos encontrados e falsos alarmes.
             """
         ),
+        markdown(
+            """
+            ### 8.1 Escolha na validação
+
+            F1 equilibra trocas encontradas e alarmes incorretos. Recall mostra quantas trocas demoradas foram localizadas.
+            """
+        ),
         code(
             """
             colunas = ["Modelo", "Acurácia", "Precisão", "Recall", "F1", "AP", "FP", "FN", "VP"]
-            print("Melhores resultados de validação:")
+            # Ordena os candidatos pelo resultado de validação.
             display(resultados["classification_validation"][colunas].head(6).round(3))
-            print("Resultado final no teste:")
+            """
+        ),
+        markdown(
+            """
+            ### 8.2 Conferência no teste
+
+            O teste mostra quantos casos futuros foram encontrados, perdidos ou sinalizados por engano.
+            """
+        ),
+        code(
+            """
+            # Exibe as métricas finais sem refazer a escolha.
             display(resultados["classification_test"][colunas].round(3))
             """
         ),
@@ -343,6 +399,7 @@ def build_notebook() -> None:
         ),
         code(
             """
+            # Atualiza arquivos, métricas e gráficos da entrega.
             generate_charts(dados, divisao, resultados, qualidade)
             resumo = save_outputs(
                 dados,
@@ -363,8 +420,11 @@ def build_notebook() -> None:
             ## 12. Respostas finais às perguntas do projeto
 
             A análise partiu de 2.057 registros e preservou 2.043 após a remoção de 14 duplicatas exatas. Na base limpa, o tempo médio foi de **35,90 minutos**, a mediana foi de **34,70 minutos** e **27,2%** das trocas ultrapassaram 42 minutos.
-
-            ### 1. Quantos minutos a troca deve levar?
+            """
+        ),
+        markdown(
+            """
+            ### Pergunta 1. Quantos minutos a troca deve levar?
 
             Não existe um único tempo correto para todas as trocas. A resposta é a previsão individual produzida pela árvore de regressão a partir das oito informações conhecidas antes de a linha parar.
 
@@ -375,8 +435,11 @@ def build_notebook() -> None:
             - redução de **67,4% no erro** em comparação com a referência pela mediana, cujo MAE foi de 8,14 minutos.
 
             Portanto, para uma nova troca, a coluna `tempo_previsto_min` é a resposta estimada. O MAE resume o erro médio observado no teste e não deve ser interpretado como margem garantida para cada caso.
-
-            ### 2. A troca deve ultrapassar 42 minutos?
+            """
+        ),
+        markdown(
+            """
+            ### Pergunta 2. A troca deve ultrapassar 42 minutos?
 
             A árvore de classificação responde **Sim** quando identifica risco acima do limite operacional e **Não** nos demais casos. Entre as **102 trocas realmente demoradas** no teste:
 
@@ -386,8 +449,11 @@ def build_notebook() -> None:
             - o `recall` foi de **87,3%**, a precisão de **74,2%** e o F1 de **80,2%**.
 
             Assim, o modelo encontra a maior parte das trocas demoradas e pode orientar a priorização do apoio. Ele não substitui a decisão do supervisor, pois ainda existem casos perdidos e falsos alarmes.
-
-            ### Conclusão operacional
+            """
+        ),
+        markdown(
+            """
+            ### Aplicação operacional
 
             Os resultados respondem positivamente à pergunta central do projeto: os dados disponíveis antes da troca contêm informação suficiente para estimar a duração e antecipar o risco. A aplicação recomendada é ordenar as próximas trocas pela probabilidade de atraso, consultar o tempo estimado e direcionar primeiro o apoio humano para os maiores riscos.
 
