@@ -62,7 +62,7 @@ Equipe:
 3. Selecione **Ambiente de execução > Executar tudo**.
 4. Baixe o arquivo `.json` gerado pelo painel **Arquivos**.
 
-**Notebook principal:** ele importa o código de `src` e lê `dataset/raw/N4_limpo.csv`, então precisa do repositório completo. Clone o repositório e execute o notebook a partir da raiz, ou use o botão **Abrir no Colab** e envie essas pastas.
+**Notebook principal:** ele importa o código de `src` e lê `dataset/raw/N4_limpo.csv`. A primeira célula, ao detectar o Colab, clona o repositório automaticamente; nenhum upload é necessário. Fora do Colab, execute o notebook a partir da raiz do repositório.
 
 Os notebooks também podem ser abertos diretamente na branch principal pelos links do GitHub.
 

@@ -68,9 +68,25 @@ def build_notebook() -> None:
             """
             from pathlib import Path
             import json
+            import os
+            import subprocess
             import sys
             import pandas as pd
             from IPython.display import Image, display
+
+            # No Google Colab, baixa o repositório para ter as pastas src e dataset.
+            try:
+                import google.colab  # noqa: F401
+                EM_COLAB = True
+            except ImportError:
+                EM_COLAB = False
+            if EM_COLAB and not Path("src/smt_changeover").exists():
+                subprocess.run(
+                    ["git", "clone", "--depth", "1",
+                     "https://github.com/JulianaBallin/SMT-Changeover-Prediction.git"],
+                    check=True,
+                )
+                os.chdir("SMT-Changeover-Prediction")
 
             PROJECT_DIR = Path.cwd()
             SRC_DIR = PROJECT_DIR / "src"
