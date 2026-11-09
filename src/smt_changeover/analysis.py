@@ -75,6 +75,11 @@ GRAY = "#64747A"
 LIGHT_GRAY = "#E9EFEE"
 
 
+def fmt_decimal(value: float, digits: int = 2) -> str:
+    """Format a number with a decimal comma for chart titles."""
+    return f"{value:.{digits}f}".replace(".", ",")
+
+
 def read_raw_data(path: Path = DATASET_PATH) -> pd.DataFrame:
     """Read every original field as text for an auditable cleaning process."""
     return pd.read_csv(path, dtype=str, keep_default_na=False)
@@ -580,7 +585,10 @@ def generate_charts(
     bars = axis.barh(ordered["Modelo"], ordered["MAE"], color=colors[: len(ordered)])
     axis.bar_label(bars, fmt="%.2f min", padding=5, color=INK, fontweight="bold")
     axis.set(
-        title="A árvore reduz o erro médio para 2,66 minutos",
+        title=(
+            "A árvore reduz o erro médio para "
+            f"{fmt_decimal(ordered['MAE'].min())} minutos"
+        ),
         xlabel="MAE no teste (menor é melhor)",
         ylabel="",
     )
@@ -633,7 +641,10 @@ def generate_charts(
     axis.set_xticklabels(["Até 42", "Acima de 42"])
     axis.set_yticklabels(["Até 42", "Acima de 42"], rotation=0)
     axis.set(
-        title="A árvore encontra 89 de 102 trocas demoradas",
+        title=(
+            f"A árvore encontra {int(matrix[1, 1])} de "
+            f"{int(matrix[1].sum())} trocas demoradas"
+        ),
         xlabel="Previsão",
         ylabel="Resultado real",
     )
@@ -662,7 +673,7 @@ def generate_charts(
     bars = axis.barh(importance["Rótulo"], importance["Importância"], color=GREEN)
     axis.bar_label(bars, fmt="%.2f", padding=4, color=INK)
     axis.set(
-        title="Kit e alimentadores concentram a explicação da árvore",
+        title="Poucas entradas concentram a explicação da árvore",
         xlabel="Importância relativa",
         ylabel="",
     )
