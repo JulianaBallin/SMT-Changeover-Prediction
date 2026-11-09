@@ -1,0 +1,65 @@
+{
+  "classe": "troca_demorada",
+  "regra": "tempo_troca_min > 42",
+  "nomes": [
+    "normal",
+    "demorada"
+  ],
+  "casos_sim_validacao": 102,
+  "casos_validacao": 409,
+  "tabela_profundidades": [
+    {
+      "Profundidade": "1",
+      "Treino: erros": 301,
+      "Validação: erros": 93
+    },
+    {
+      "Profundidade": "2",
+      "Treino: erros": 135,
+      "Validação: erros": 45
+    },
+    {
+      "Profundidade": "4",
+      "Treino: erros": 75,
+      "Validação: erros": 33
+    },
+    {
+      "Profundidade": "6",
+      "Treino: erros": 54,
+      "Validação: erros": 34
+    },
+    {
+      "Profundidade": "sem limite",
+      "Treino: erros": 0,
+      "Validação: erros": 38
+    }
+  ],
+  "profundidade_escolhida": 4,
+  "arvore_validacao": {
+    "VP": 95,
+    "FN": 7,
+    "FP": 26,
+    "VN": 281,
+    "% de acertos": 91.9
+  },
+  "medidas_validacao": {
+    "arvore": {
+      "recall %": 93.1,
+      "precisão %": 78.5,
+      "F1 %": 85.2
+    }
+  },
+  "teste_aberto": true,
+  "arvore_teste": {
+    "VP": 88,
+    "FN": 13,
+    "FP": 35,
+    "VN": 273,
+    "% de acertos": 88.3
+  },
+  "medidas_teste": {
+    "recall %": 87.1,
+    "precisão %": 71.5,
+    "F1 %": 78.6
+  }
+}
