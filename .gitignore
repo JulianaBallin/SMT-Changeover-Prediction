@@ -206,6 +206,9 @@ cython_debug/
 # Temporary file for partial code execution
 tempCodeRunnerFile.py
 
+# Local presentation notes
+docs/roteiro_apresentacao_local.md
+
 # Ruff stuff:
 .ruff_cache/
 
