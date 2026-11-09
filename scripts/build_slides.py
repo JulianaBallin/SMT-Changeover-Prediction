@@ -624,9 +624,12 @@ def slide_dataset(prs: Presentation, summary: dict) -> None:
     set_background(slide, TEAL)
     add_doodles(slide, 0, dark=True)
     add_header(slide, "04", "O dataset", color=CREAM)
-    add_metric(slide, "2.057", "linhas recebidas", 0.66, 1.18, 2.18, CORAL)
-    add_metric(slide, "2.043", "trocas após deduplicar", 3.02, 1.18, 2.36, GREEN)
-    add_metric(slide, "27,2%", "acima de 42 min", 5.56, 1.18, 2.18, CORAL)
+    raw_rows = f"{summary['raw_rows']:,}".replace(",", ".")
+    duplicates = str(summary["exact_duplicates_removed"])
+    delayed_rate = f"{summary['delayed_rate'] * 100:.1f}".replace(".", ",")
+    add_metric(slide, raw_rows, "trocas recebidas", 0.66, 1.18, 2.18, CORAL)
+    add_metric(slide, duplicates, "duplicatas (base já limpa)", 3.02, 1.18, 2.36, GREEN)
+    add_metric(slide, f"{delayed_rate}%", "acima de 42 min", 5.56, 1.18, 2.18, CORAL)
     add_metric(slide, "8", "entradas antes da troca", 7.92, 1.18, 2.30, BLUE)
     add_metric(slide, "jan a ago", "período de 2026", 10.40, 1.18, 2.25, YELLOW)
 
@@ -650,10 +653,17 @@ def slide_dataset(prs: Presentation, summary: dict) -> None:
 
     add_card(slide, 6.82, 2.73, 5.85, 3.38, color=CREAM, line=MINT)
     add_text(slide, "Divisão temporal", 7.17, 3.02, 4.95, 0.42, size=18, color=TEAL, bold=True, align=PP_ALIGN.CENTER)
+
+    def _period(split_name: str) -> str:
+        split = summary["splits"][split_name]
+        start = "/".join(reversed(split["start"].split("-")[1:]))
+        end = "/".join(reversed(split["end"].split("-")[1:]))
+        return f"{start} a {end}"
+
     split_details = [
-        ("Treino", "1.236", "05/01 a 27/05", GREEN),
-        ("Validação", "404", "28/05 a 15/07", YELLOW),
-        ("Teste", "403", "16/07 a 28/08", CORAL),
+        ("Treino", f"{summary['splits']['treino']['records']:,}".replace(",", "."), _period("treino"), GREEN),
+        ("Validação", str(summary["splits"]["validacao"]["records"]), _period("validacao"), YELLOW),
+        ("Teste", str(summary["splits"]["teste"]["records"]), _period("teste"), CORAL),
     ]
     for index, (name, amount, period, color) in enumerate(split_details):
         y = 3.72 + index * 0.68
@@ -708,10 +718,13 @@ def slide_regression(prs: Presentation, summary: dict) -> None:
     add_doodles(slide, 2)
     add_header(slide, "06", "Resultado 1 · Quantos minutos?")
     add_picture_contain(slide, CHART_DIR / "04_comparacao_regressao.png", 0.46, 1.23, 7.23, 4.95)
+    mae = f"{summary['test_mae']:.2f}".replace(".", ",")
+    reduction = f"{summary['mae_reduction'] * 100:.1f}".replace(".", ",")
+    r_squared = f"{summary['test_r2']:.3f}".replace(".", ",")
     metric_rows = [
-        (1.33, "2,66 min", "erro médio da árvore", TEAL),
-        (2.83, "67,4%", "menos erro que a referência", CORAL),
-        (4.33, "R² 0,884", "no período de teste", BLUE),
+        (1.33, f"{mae} min", "erro médio da árvore", TEAL),
+        (2.83, f"{reduction}%", "menos erro que a referência", CORAL),
+        (4.33, f"R² {r_squared}", "no período de teste", BLUE),
     ]
     for y, value, label, accent in metric_rows:
         add_card(slide, 7.88, y, 4.87, 1.24, color="#FFFFFF", line=MINT)
@@ -719,7 +732,7 @@ def slide_regression(prs: Presentation, summary: dict) -> None:
         add_text(slide, value, 8.16, y + 0.30, 4.31, 0.42, size=25, color=accent, bold=True, align=PP_ALIGN.CENTER)
         add_text(slide, label, 8.16, y + 0.82, 4.31, 0.25, size=12.5, color=INK, align=PP_ALIGN.CENTER)
     add_card(slide, 1.43, 6.17, 10.43, 0.55, color=TEAL)
-    add_text(slide, "A árvore de profundidade 7 foi escolhida na validação.", 1.68, 6.30, 9.92, 0.28, size=15, color=CREAM, bold=True, align=PP_ALIGN.CENTER)
+    add_text(slide, f"{summary['best_regression']} foi a escolha da validação.", 1.68, 6.30, 9.92, 0.28, size=15, color=CREAM, bold=True, align=PP_ALIGN.CENTER)
     add_footer(slide, 7)
 
 
@@ -731,9 +744,9 @@ def slide_classification(prs: Presentation, summary: dict) -> None:
     add_header(slide, "07", "Resultado 2 · Vai passar de 42 minutos?")
     add_picture_contain(slide, CHART_DIR / "06_matriz_confusao.png", 0.65, 1.18, 6.35, 5.28)
     classification_rows = [
-        (1.29, "89", "trocas demoradas encontradas", TEAL, MINT),
-        (2.60, "13", "trocas demoradas perdidas", CORAL, "#F8D2C8"),
-        (3.91, "31", "falsos alarmes", BLUE, LIGHT_BLUE),
+        (1.29, str(summary["true_positive"]), "trocas demoradas encontradas", TEAL, MINT),
+        (2.60, str(summary["false_negative"]), "trocas demoradas perdidas", CORAL, "#F8D2C8"),
+        (3.91, str(summary["false_positive"]), "falsos alarmes", BLUE, LIGHT_BLUE),
     ]
     for y, value, label, accent, fill in classification_rows:
         add_card(slide, 7.16, y, 5.49, 1.09, color=fill, line=MINT)
@@ -741,7 +754,10 @@ def slide_classification(prs: Presentation, summary: dict) -> None:
         add_text(slide, value, 7.46, y + 0.25, 4.89, 0.34, size=24, color=accent, bold=True, align=PP_ALIGN.CENTER)
         add_text(slide, label, 7.46, y + 0.68, 4.89, 0.25, size=12.8, color=INK, align=PP_ALIGN.CENTER)
     add_card(slide, 7.16, 5.22, 5.49, 1.05, color=TEAL)
-    add_text(slide, "Recall 87,3%  ·  Precisão 74,2%  ·  F1 80,2%", 7.43, 5.55, 4.95, 0.30, size=13.2, color=CREAM, bold=True, align=PP_ALIGN.CENTER)
+    recall = f"{summary['test_recall'] * 100:.1f}".replace(".", ",")
+    precision = f"{summary['test_precision'] * 100:.1f}".replace(".", ",")
+    f1_score = f"{summary['test_f1'] * 100:.1f}".replace(".", ",")
+    add_text(slide, f"Recall {recall}%  ·  Precisão {precision}%  ·  F1 {f1_score}%", 7.43, 5.55, 4.95, 0.30, size=13.2, color=CREAM, bold=True, align=PP_ALIGN.CENTER)
     add_footer(slide, 8)
 
 
@@ -1016,14 +1032,14 @@ def slide_general_questions_1(prs: Presentation) -> None:
         (
             "03",
             "Variação entre grupos",
-            "Mudar de família quase triplica o risco (42,7% × 15,3%). A linha SMT3 tem mais trocas demoradas (33,4%) que SMT1 e SMT2 (≈24%). Turno varia pouco.",
+            "Mudar de família multiplica o risco por 5 (45,5% × 8,9%). A linha SMT3 tem mais trocas demoradas (35,5%) que SMT1 e SMT2 (≈19%). Turno varia pouco.",
             GREEN,
             MINT,
         ),
         (
             "04",
             "Características mais úteis",
-            "Alimentadores a trocar (50,5%), kit preparado (19,0%), mudança de família (19,8%) e experiência (9,5%) concentram 98% da importância (gráfico 07).",
+            "Alimentadores a trocar (47,1%), mudança de família (29,1%) e kit preparado (22,2%) concentram mais de 98% da importância (gráfico 07).",
             YELLOW,
             "#FBE8B6",
         ),
@@ -1037,24 +1053,33 @@ def slide_general_questions_1(prs: Presentation) -> None:
     add_footer(slide, 13)
 
 
-def slide_general_questions_2(prs: Presentation) -> None:
+def slide_general_questions_2(prs: Presentation, summary: dict) -> None:
     """Answer the remaining four general course questions."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     set_background(slide, CREAM)
     add_doodles(slide, 2)
     add_header(slide, "13", "Perguntas gerais do curso (2/2)")
+    mae = f"{summary['test_mae']:.2f}".replace(".", ",")
+    reference_mae = f"{summary['reference_mae']:.2f}".replace(".", ",")
+    reduction = f"{summary['mae_reduction'] * 100:.1f}".replace(".", ",")
+    recall = f"{summary['test_recall'] * 100:.1f}".replace(".", ",")
+    true_positive = summary["true_positive"]
+    false_negative = summary["false_negative"]
+    false_positive = summary["false_positive"]
+    delayed_total = true_positive + false_negative
+    missed_word = "perdida" if false_negative == 1 else "perdidas"
     cards = [
         (
             "05",
             "Modelo vs. referência simples",
-            "MAE de 2,66 min contra 8,14 min da mediana (−67,4%). Recall de 87,3% contra 0% da classe majoritária na classificação.",
+            f"MAE de {mae} min contra {reference_mae} min da mediana (−{reduction}%). Recall de {recall}% contra 0% da classe majoritária na classificação.",
             TEAL,
             "#FFFFFF",
         ),
         (
             "06",
             "Acertos, perdas e alarmes",
-            "No teste: 89 das 102 trocas demoradas encontradas, 13 perdidas e 31 falsos alarmes entre as trocas dentro do limite.",
+            f"No teste: {true_positive} das {delayed_total} trocas demoradas encontradas, {false_negative} {missed_word} e {false_positive} falsos alarmes entre as trocas dentro do limite.",
             CORAL,
             "#F8D2C8",
         ),
@@ -1149,7 +1174,7 @@ def build_presentation() -> None:
     slide_conclusion(presentation)
     slide_final_answers(presentation, summary)
     slide_general_questions_1(presentation)
-    slide_general_questions_2(presentation)
+    slide_general_questions_2(presentation, summary)
     slide_thanks(presentation)
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
