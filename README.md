@@ -53,7 +53,7 @@ Os únicos cadernos entregáveis são os dois notebooks abaixo. Ambos usam a bas
 | --- | --- |
 | [N4_regressao.json](outputs/metrics/N4_regressao.json) | Resultados reproduzíveis da regressão |
 | [N4_classificacao.json](outputs/metrics/N4_classificacao.json) | Resultados reproduzíveis da classificação |
-| [apresentacao_smt_em_tempo.pptx](docs/apresentacao/apresentacao_smt_em_tempo.pptx) | Apresentação editável de sete slides para cinco minutos |
+| [apresentacao_smt_em_tempo.pptx](docs/apresentacao/apresentacao_smt_em_tempo.pptx) | Apresentação editável de doze slides para cinco minutos |
 | [apresentacao_smt_em_tempo.pdf](docs/apresentacao/apresentacao_smt_em_tempo.pdf) | Versão final da apresentação em PDF |
 | [relatorio_tecnico_smt_em_tempo.pdf](docs/relatorio/relatorio_tecnico_smt_em_tempo.pdf) | Relatório técnico complementar com análise temporal |
 
@@ -85,13 +85,16 @@ A regressão atende à meta de MAE de até 3,5 minutos. Na classificação, a á
 
 </div>
 
-A apresentação usa o template institucional Cyber Labs e resume os dois notebooks em sete slides. Ela inclui:
+A apresentação usa o template institucional Cyber Labs e organiza os dois notebooks em doze slides. Ela inclui:
 
+- a contextualização da parada de linha e das etapas de uma troca de produto;
 - o problema e as duas perguntas de negócio;
+- a base, a divisão do experimento e os cuidados contra vazamento;
 - o gráfico de profundidade extraído do notebook de regressão;
 - a matriz de confusão extraída do notebook de classificação;
 - os desafios de dados ausentes, sobreajuste e queda entre validação e teste;
 - curiosidades sobre mudança de família, linha SMT e características mais úteis;
+- respostas explícitas às duas perguntas do projeto;
 - respostas às oito perguntas gerais do curso;
 - decisão apoiada e limites do estudo.
 
