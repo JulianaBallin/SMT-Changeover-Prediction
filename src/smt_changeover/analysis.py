@@ -36,6 +36,7 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 PROJECT_DIR = Path(__file__).resolve().parents[2]
 DATASET_PATH = PROJECT_DIR / "dataset" / "raw" / "N4_TrocaSMT.csv"
+CLEAN_DATASET_PATH = PROJECT_DIR / "dataset" / "raw" / "N4_limpo.csv"
 PROCESSED_DATA_DIR = PROJECT_DIR / "dataset" / "processed"
 CHART_DIR = PROJECT_DIR / "outputs" / "charts"
 METRICS_DIR = PROJECT_DIR / "outputs" / "metrics"
@@ -77,6 +78,32 @@ LIGHT_GRAY = "#E9EFEE"
 def read_raw_data(path: Path = DATASET_PATH) -> pd.DataFrame:
     """Read every original field as text for an auditable cleaning process."""
     return pd.read_csv(path, dtype=str, keep_default_na=False)
+
+
+def load_clean_data(
+    path: Path = CLEAN_DATASET_PATH,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Read the professor's already cleaned base (``N4_limpo.csv``).
+
+    The base was cleaned in the course (Aula 3), so no cleaning step runs here.
+    The audit and suspicious tables are returned empty to keep the same
+    interface as ``clean_data``.
+    """
+    data = pd.read_csv(path, encoding="utf-8-sig", parse_dates=["data_operacao"])
+    expected_class = data[REGRESSION_TARGET].gt(42).astype(int)
+    if not data[CLASSIFICATION_TARGET].eq(expected_class).all():
+        raise ValueError("A classe não corresponde à regra de 42 minutos.")
+    quality = pd.DataFrame(
+        {
+            "Ausentes": data[FEATURES].isna().sum(),
+            "Ausentes (%)": (100 * data[FEATURES].isna().mean()).round(2),
+        }
+    )
+    audit = pd.DataFrame(columns=["Etapa", "Coluna", "Quantidade"])
+    suspicious = pd.DataFrame(
+        columns=["id_registro", "coluna", "valor_original", "valor_convertido"]
+    )
+    return data, audit, suspicious, quality
 
 
 def _append_audit(
@@ -769,9 +796,9 @@ def save_outputs(
     )
     summary = {
         "project": "SMT em Tempo",
-        "raw_rows": int(len(read_raw_data())),
+        "raw_rows": int(len(data)),
         "clean_rows": int(len(data)),
-        "exact_duplicates_removed": int(len(read_raw_data()) - len(data)),
+        "exact_duplicates_removed": 0,
         "date_start": data["data_operacao"].min(),
         "date_end": data["data_operacao"].max(),
         "train_end": train_end,
@@ -815,8 +842,8 @@ def save_outputs(
 
 def run_analysis() -> dict[str, Any]:
     """Execute the complete reproducible analysis."""
-    raw = read_raw_data()
-    data, audit, suspicious, quality = clean_data(raw)
+    data, audit, suspicious, quality = load_clean_data()
+    raw = data
     split, train_end, validation_end = temporal_split(data)
     results = train_and_evaluate(data, split)
     generate_charts(data, split, results, quality)

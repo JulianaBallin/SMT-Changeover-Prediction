@@ -1,0 +1,55 @@
+{
+  "alvo": "tempo_troca_min",
+  "unidade": "min",
+  "estrategia_preenchimento": "mediana",
+  "divisao": {
+    "treino": {
+      "casos": "1225",
+      "%": "60.0"
+    },
+    "validacao": {
+      "casos": "409",
+      "%": "20.0"
+    },
+    "teste": {
+      "casos": "409",
+      "%": "20.0"
+    }
+  },
+  "mae_regua_validacao": 6.1002,
+  "melhor_uma_pergunta": "alimentadores_a_trocar",
+  "tabela_profundidades": [
+    {
+      "Profundidade": "1",
+      "MAE treino": 5.2217,
+      "MAE validação": 4.755
+    },
+    {
+      "Profundidade": "2",
+      "MAE treino": 3.7253,
+      "MAE validação": 3.571
+    },
+    {
+      "Profundidade": "4",
+      "MAE treino": 1.9754,
+      "MAE validação": 2.0401
+    },
+    {
+      "Profundidade": "6",
+      "MAE treino": 1.7672,
+      "MAE validação": 2.1807
+    },
+    {
+      "Profundidade": "sem limite",
+      "MAE treino": 0.0,
+      "MAE validação": 2.955
+    }
+  ],
+  "arvore_profundidade_escolhida": 4,
+  "arvore_mae_validacao": 2.0401,
+  "reta_mae_validacao": 3.0209,
+  "modelo_escolhido": "arvore",
+  "mae_validacao_modelo_escolhido": 2.0401,
+  "mae_teste_modelo_escolhido": 1.929,
+  "teste_aberto": true
+}
