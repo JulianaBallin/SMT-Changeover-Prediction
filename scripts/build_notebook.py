@@ -81,9 +81,8 @@ def build_notebook() -> None:
                 CATEGORICAL_FEATURES,
                 FEATURES,
                 NUMERIC_FEATURES,
-                clean_data,
                 generate_charts,
-                read_raw_data,
+                load_clean_data,
                 save_outputs,
                 temporal_split,
                 train_and_evaluate,
@@ -116,29 +115,29 @@ def build_notebook() -> None:
         ),
         code(
             """
-            # Carrega a base original sem alterá-la.
-            bruto = read_raw_data()
-            print("Dimensão recebida:", bruto.shape)
-            display(bruto.head(6))
+            # Carrega a base limpa fornecida pelo professor (N4_limpo.csv), sem alterá-la.
+            dados, registro_limpeza, suspeitas, qualidade = load_clean_data()
+            print("Dimensão recebida:", dados.shape)
+            display(dados.head(6))
             """
         ),
         markdown(
             """
-            ## 3. Limpeza rastreável
+            ## 3. Base limpa e conferências
 
-            A base contém cópias exatas, espaços escondidos, grafias diferentes, vazios, vírgulas decimais, códigos `9999`, datas em dois formatos e medidas fora dos critérios didáticos.
+            Usamos a base **já limpa** fornecida pelo professor (`N4_limpo.csv`, limpeza da Aula 3). Nela, as duplicatas exatas já foram removidas, as grafias e os formatos foram padronizados, os códigos `9999` e as medidas fora dos critérios didáticos viraram ausentes no campo afetado, e os alvos não foram preenchidos.
 
-            Somente duplicatas exatas são removidas. Medidas inválidas viram ausentes no campo afetado, sem apagar a troca inteira. Os alvos não são preenchidos.
+            Por isso, aqui não refazemos a limpeza: conferimos que a base chegou consistente.
             """
         ),
         code(
             """
-            # Limpa a base e registra cada correção.
-            dados, registro_limpeza, suspeitas, qualidade = clean_data(bruto)
-
-            print("Linhas antes:", len(bruto))
-            print("Linhas depois:", len(dados))
-            display(registro_limpeza.query("Quantidade > 0").reset_index(drop=True))
+            # Confere a consistência da base recebida.
+            print("Trocas na base:", len(dados))
+            print("Linhas duplicadas:", int(dados.duplicated().sum()))
+            print("Período:", dados["data_operacao"].min().date(), "a", dados["data_operacao"].max().date())
+            regra_42 = dados["tempo_troca_min"].gt(42).astype(int).eq(dados["troca_demorada"]).all()
+            print("Classe confere com a regra de 42 minutos:", bool(regra_42))
             """
         ),
         markdown(
@@ -303,7 +302,7 @@ def build_notebook() -> None:
             """
             ### Resultado da regressão
 
-            A árvore de profundidade 7 alcançou MAE de **2,66 minutos** no teste. A referência simples errou **8,14 minutos** em média. A redução do erro foi de **67,4%**, com R² de **0,884**.
+            A árvore de profundidade 5 alcançou MAE de **2,12 minutos** no teste. A referência simples errou **6,27 minutos** em média. A redução do erro foi de **66,2%**, com R² de **0,886**.
 
             O ganho mostra que as entradas conhecidas antes da troca carregam informação útil. O erro não desaparece, então a previsão deve apoiar o supervisor e não substituir sua avaliação.
             """
@@ -352,12 +351,12 @@ def build_notebook() -> None:
             """
             ### Resultado da classificação
 
-            No teste, a árvore de profundidade 4:
+            No teste, a árvore de profundidade 3:
 
-            - encontrou **89 de 102** trocas demoradas;
-            - deixou passar **13** trocas demoradas;
-            - gerou **31** falsos alarmes;
-            - alcançou `recall` de **87,3%**, precisão de **74,2%** e F1 de **80,2%**.
+            - encontrou **101 de 102** trocas demoradas;
+            - deixou passar **1** troca demorada;
+            - gerou **24** falsos alarmes;
+            - alcançou `recall` de **99,0%**, precisão de **80,8%** e F1 de **89,0%**.
 
             A referência da classe majoritária não encontrou nenhuma troca demorada. O classificador, portanto, oferece um sinal operacional útil.
             """
@@ -419,7 +418,7 @@ def build_notebook() -> None:
             """
             ## 12. Respostas finais às perguntas do projeto
 
-            A análise partiu de 2.057 registros e preservou 2.043 após a remoção de 14 duplicatas exatas. Na base limpa, o tempo médio foi de **35,90 minutos**, a mediana foi de **34,70 minutos** e **27,2%** das trocas ultrapassaram 42 minutos.
+            A análise usou as 2.043 trocas da base limpa fornecida pelo professor. O tempo médio foi de **35,66 minutos**, a mediana foi de **35,00 minutos** e **24,8%** das trocas ultrapassaram 42 minutos.
             """
         ),
         markdown(
@@ -428,11 +427,11 @@ def build_notebook() -> None:
 
             Não existe um único tempo correto para todas as trocas. A resposta é a previsão individual produzida pela árvore de regressão a partir das oito informações conhecidas antes de a linha parar.
 
-            Nos **403 registros de teste**, a árvore de profundidade 7 apresentou:
+            Nos **403 registros de teste**, a árvore de profundidade 5 apresentou:
 
-            - **MAE de 2,66 minutos**, ou seja, diferença absoluta média de 2,66 minutos entre o tempo previsto e o observado;
-            - **R² de 0,884**, indicando que o modelo explica 88,4% da variação observada nesse período;
-            - redução de **67,4% no erro** em comparação com a referência pela mediana, cujo MAE foi de 8,14 minutos.
+            - **MAE de 2,12 minutos**, ou seja, diferença absoluta média de 2,12 minutos entre o tempo previsto e o observado;
+            - **R² de 0,886**, indicando que o modelo explica 88,6% da variação observada nesse período;
+            - redução de **66,2% no erro** em comparação com a referência pela mediana, cujo MAE foi de 6,27 minutos.
 
             Portanto, para uma nova troca, a coluna `tempo_previsto_min` é a resposta estimada. O MAE resume o erro médio observado no teste e não deve ser interpretado como margem garantida para cada caso.
             """
@@ -443,10 +442,10 @@ def build_notebook() -> None:
 
             A árvore de classificação responde **Sim** quando identifica risco acima do limite operacional e **Não** nos demais casos. Entre as **102 trocas realmente demoradas** no teste:
 
-            - **89** foram identificadas corretamente;
-            - **13** não foram detectadas;
-            - **31** trocas abaixo do limite geraram falso alarme;
-            - o `recall` foi de **87,3%**, a precisão de **74,2%** e o F1 de **80,2%**.
+            - **101** foram identificadas corretamente;
+            - **1** não foi detectada;
+            - **24** trocas abaixo do limite geraram falso alarme;
+            - o `recall` foi de **99,0%**, a precisão de **80,8%** e o F1 de **89,0%**.
 
             Assim, o modelo encontra a maior parte das trocas demoradas e pode orientar a priorização do apoio. Ele não substitui a decisão do supervisor, pois ainda existem casos perdidos e falsos alarmes.
             """
@@ -501,12 +500,12 @@ def build_notebook() -> None:
             """
             ### Que problemas de registro vocês encontraram? Como trataram cada um e conferiram o resultado?
 
-            A base trouxe oito tipos de problema de registro, auditados pelo pipeline de limpeza (seção 3): **14** duplicatas exatas; espaços nas bordas de texto (**191** casos: 59 em `linha_smt`, 65 em `muda_familia`, 67 em `turno`); grafias diferentes para a mesma categoria (**161** casos, padronizadas por um dicionário fixo); vírgulas decimais no lugar do ponto (**189** casos); o código-sentinela `9999` (**48** casos); datas no formato brasileiro `dd/mm/aaaa` misturadas ao formato internacional (**81** casos); e medidas fora dos critérios didáticos do curso, como alimentadores negativos ou kit acima de 100% (**58** casos).
+            O arquivo original (`N4_TrocaSMT.csv`, primeira versão da base) trouxe oito tipos de problema de registro: **14** duplicatas exatas; espaços nas bordas de texto (**191** casos); grafias diferentes para a mesma categoria (**161** casos); vírgulas decimais no lugar do ponto (**189** casos); o código-sentinela `9999` (**48** casos); datas no formato `dd/mm/aaaa` misturadas ao formato internacional (**81** casos); e medidas fora dos critérios didáticos, como alimentadores negativos ou kit acima de 100% (**58** casos).
 
-            **Tratamento:** só as 14 duplicatas exatas foram removidas da base. Nos demais casos, apenas o valor afetado virou ausente no campo correspondente — a troca inteira não foi descartada, porque as outras colunas daquele registro continuam confiáveis. Os alvos (`tempo_troca_min`, `troca_demorada`) nunca foram alterados por essas regras.
+            **Tratamento:** só as duplicatas exatas foram removidas. Nos demais casos, apenas o valor afetado virou ausente no campo correspondente, porque as outras colunas daquele registro continuam confiáveis. Os alvos não foram alterados por essas regras.
 
-            **Conferência:** cada correção foi registrada na tabela de auditoria `registro_limpeza` (seção 3), com a etapa, a coluna afetada e a quantidade de casos, o que permite reproduzir e verificar cada contagem.
-            """
+            **Conferência:** cada correção foi registrada em uma tabela de auditoria, e a nossa limpeza reproduziu exatamente as entradas da base limpa do professor (`N4_limpo.csv`), que é a base usada nas análises deste notebook. Nessa versão final, só os valores dos alvos (`tempo_troca_min` e `troca_demorada`) diferem da primeira versão; as contagens acima descrevem o arquivo original.
+                        """
         ),
         markdown(
             """
@@ -527,13 +526,13 @@ def build_notebook() -> None:
             """
             ### Como o resultado varia entre os casos e os grupos?
 
-            O tempo de troca varia bastante entre casos individuais: de cerca de 20 a quase 60 minutos, com média de **35,90 minutos** e mediana de **34,70 minutos** — a diferença entre as duas mostra uma cauda de casos mais longos, visível no histograma (gráfico 01).
+            O tempo de troca varia bastante entre casos individuais: de cerca de 17 a 59 minutos, com média de **35,66 minutos** e mediana de **35,00 minutos** — a diferença entre as duas mostra uma cauda de casos mais longos, visível no histograma (gráfico 01).
 
             Entre grupos, a variação não é uniforme:
 
-            - **Mudar de família de produto** é o fator com maior diferença: média de **41,46 minutos** quando muda contra **31,64 minutos** quando não muda, e **42,7%** das trocas com mudança de família ultrapassam 42 minutos, contra **15,3%** sem mudança — quase o triplo do risco.
-            - **Entre as linhas SMT**, a SMT3 teve o maior tempo médio (**38,33 min**) e a maior taxa de trocas demoradas (**33,4%**), enquanto SMT1 e SMT2 ficaram próximas uma da outra (34,31 e 34,88 min; 23,6% e 24,1%).
-            - **Entre turnos**, a variação foi pequena: médias entre 35,42 e 36,28 minutos e taxas de trocas demoradas entre 25,9% e 27,8%, sem um turno que se destaque como nas outras duas comparações.
+            - **Mudar de família de produto** é o fator com maior diferença: média de **40,71 minutos** quando muda contra **31,78 minutos** quando não muda, e **45,5%** das trocas com mudança de família ultrapassam 42 minutos, contra **8,9%** sem mudança — mais de cinco vezes o risco.
+            - **Entre as linhas SMT**, a SMT3 teve o maior tempo médio (**38,34 min**) e a maior taxa de trocas demoradas (**35,5%**), enquanto SMT1 e SMT2 ficaram próximas uma da outra (34,34 e 34,10 min; 19,9% e 18,2%).
+            - **Entre turnos**, a variação foi pequena: médias entre 35,14 e 36,20 minutos e taxas de trocas demoradas entre 22,8% e 27,3%, sem um turno que se destaque como nas outras duas comparações.
 
             O gráfico 03 (risco por kit preparado e família) mostra esse cruzamento: o risco de troca demorada sobe quando o kit está pouco preparado e sobe ainda mais quando, ao mesmo tempo, há mudança de família.
             """
@@ -556,7 +555,7 @@ def build_notebook() -> None:
             """
             ### Quais características apresentam relações com o resultado e parecem úteis para fazer previsões? Que gráficos ou tabelas sustentam essa interpretação?
 
-            A importância de característica da árvore de regressão (gráfico 07) mostra que quatro entradas concentram quase toda a capacidade preditiva: **quantidade de alimentadores a trocar** (50,5% da importância), **percentual do kit já preparado** (19,0%), **mudança de família de produto** (cerca de 19,8%, somando as duas categorias) e **experiência do operador em meses** (9,5%). Juntas, essas quatro entradas respondem por mais de 98% da importância total. Tamanho do lote, turno e linha SMT contribuíram muito pouco ou nada.
+            A importância de característica da árvore de regressão (gráfico 07) mostra que três entradas concentram quase toda a capacidade preditiva: **quantidade de alimentadores a trocar** (47,1% da importância), **mudança de família de produto** (29,1%) e **percentual do kit já preparado** (22,2%). Juntas, essas três entradas respondem por mais de 98% da importância total. Experiência do operador, componentes novos, tamanho do lote, turno e linha SMT contribuíram muito pouco.
 
             Essa ordem é coerente com a leitura exploratória da seção 5 (gráficos 02 e 03): mais alimentadores a trocar e kit menos preparado aparecem associados a tempos maiores, e mudar de família eleva o risco principalmente quando o kit está pouco preparado. A pergunta anterior mostra a mesma hierarquia nos números agregados por grupo. São associações observadas nos dados de treino, não relações causais comprovadas.
             """
@@ -573,15 +572,15 @@ def build_notebook() -> None:
 
             Sim, nas duas tarefas o modelo escolhido errou menos que a referência simples, sempre medido no teste reservado:
 
-            - Na **regressão**, a árvore de profundidade 7 teve MAE de **2,66 minutos**, contra **8,14 minutos** da referência pela mediana do treino — redução de **67,4%** no erro, com R² de 0,884.
-            - Na **classificação**, a referência (sempre prever a classe mais comum) não encontra nenhuma troca demorada, ou seja, recall de **0%**. A árvore de profundidade 4 alcançou recall de **87,3%**, precisão de **74,2%** e F1 de **80,2%** — uma diferença grande, porque a referência simplesmente não serve para a decisão operacional de priorizar apoio.
+            - Na **regressão**, a árvore de profundidade 5 teve MAE de **2,12 minutos**, contra **6,27 minutos** da referência pela mediana do treino — redução de **66,2%** no erro, com R² de 0,886.
+            - Na **classificação**, a referência (sempre prever a classe mais comum) não encontra nenhuma troca demorada, ou seja, recall de **0%**. A árvore de profundidade 3 alcançou recall de **99,0%**, precisão de **80,8%** e F1 de **89,0%** — uma diferença grande, porque a referência simplesmente não serve para a decisão operacional de priorizar apoio.
             """
         ),
         markdown(
             """
             ### Quantos casos com problema o modelo encontra, quantos deixa passar e quantos falsos alarmes produz?
 
-            No teste, entre as **102** trocas realmente demoradas, o classificador encontrou **89** (verdadeiros positivos) e deixou passar **13** (falsos negativos). Entre as **301** trocas realmente dentro do limite, ele gerou **31** falsos alarmes (falsos positivos) e classificou corretamente **270** como não demoradas (verdadeiros negativos). Isso dá recall de **87,3%** (89 de 102) e precisão de **74,2%** (89 dos 120 alertas emitidos), conforme o gráfico 06 (matriz de confusão).
+            No teste, entre as **102** trocas realmente demoradas, o classificador encontrou **101** (verdadeiros positivos) e deixou passar **1** (falso negativo). Entre as **301** trocas realmente dentro do limite, ele gerou **24** falsos alarmes (falsos positivos) e classificou corretamente **277** como não demoradas (verdadeiros negativos). Isso dá recall de **99,0%** (101 de 102) e precisão de **80,8%** (101 dos 125 alertas emitidos), conforme o gráfico 06 (matriz de confusão).
             """
         ),
         markdown(
@@ -593,9 +592,9 @@ def build_notebook() -> None:
             **O que os dados não permitem concluir:**
 
             - **Causa e efeito:** associações como "kit menos preparado aumenta o tempo" são leituras observacionais, não testadas com um experimento controlado.
-            - **Desempenho em produção real:** a base é sintética, preparada para o curso, então o MAE de 2,66 minutos e o recall de 87,3% não garantem o mesmo resultado numa fábrica real.
+            - **Desempenho em produção real:** a base é sintética, preparada para o curso, então o MAE de 2,12 minutos e o recall de 99,0% não garantem o mesmo resultado numa fábrica real.
             - **Validade ao longo do tempo:** mudanças no processo, na equipe ou nos produtos podem reduzir o desempenho do modelo, algo que este estudo não acompanha.
-            - **Garantia por caso individual:** o MAE e o recall são médias do teste; algumas trocas específicas erram mais do que esses números sugerem, e o modelo ainda deixa passar parte das trocas demoradas (13 de 102 no teste).
+            - **Garantia por caso individual:** o MAE e o recall são médias do teste; algumas trocas específicas erram mais do que esses números sugerem, e o modelo ainda pode deixar passar trocas demoradas (1 de 102 no teste) e gera falsos alarmes (24 no teste).
             """
         ),
     ]
