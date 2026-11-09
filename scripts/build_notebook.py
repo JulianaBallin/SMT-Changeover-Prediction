@@ -490,6 +490,114 @@ def build_notebook() -> None:
             )
             """
         ),
+        markdown(
+            """
+            ## 13. Perguntas gerais do curso
+
+            Esta seção responde às perguntas gerais que todas as equipes respondem, usando apenas números já calculados nas seções anteriores.
+            """
+        ),
+        markdown(
+            """
+            ### Que problemas de registro vocês encontraram? Como trataram cada um e conferiram o resultado?
+
+            A base trouxe oito tipos de problema de registro, auditados pelo pipeline de limpeza (seção 3): **14** duplicatas exatas; espaços nas bordas de texto (**191** casos: 59 em `linha_smt`, 65 em `muda_familia`, 67 em `turno`); grafias diferentes para a mesma categoria (**161** casos, padronizadas por um dicionário fixo); vírgulas decimais no lugar do ponto (**189** casos); o código-sentinela `9999` (**48** casos); datas no formato brasileiro `dd/mm/aaaa` misturadas ao formato internacional (**81** casos); e medidas fora dos critérios didáticos do curso, como alimentadores negativos ou kit acima de 100% (**58** casos).
+
+            **Tratamento:** só as 14 duplicatas exatas foram removidas da base. Nos demais casos, apenas o valor afetado virou ausente no campo correspondente — a troca inteira não foi descartada, porque as outras colunas daquele registro continuam confiáveis. Os alvos (`tempo_troca_min`, `troca_demorada`) nunca foram alterados por essas regras.
+
+            **Conferência:** cada correção foi registrada na tabela de auditoria `registro_limpeza` (seção 3), com a etapa, a coluna afetada e a quantidade de casos, o que permite reproduzir e verificar cada contagem.
+            """
+        ),
+        markdown(
+            """
+            ### Quais informações ficaram ausentes? Como isso afeta a análise?
+
+            Depois da limpeza, cinco entradas numéricas ficaram com ausências: `experiencia_operador_meses` (124 casos, 6,07%), `componentes_novos` (88 casos, 4,31%), `kit_preparado_pct` (54 casos, 2,64%), `tamanho_lote_placas` (32 casos, 1,57%) e `alimentadores_a_trocar` (22 casos, 1,08%). As três entradas de texto (`linha_smt`, `muda_familia`, `turno`) não ficaram com ausências, e nenhum registro do alvo `tempo_troca_min` ficou ausente, então nenhuma troca foi perdida por falta de resposta.
+
+            **Efeito na análise:** ausência não foi tratada como zero, porque zero teria um significado diferente (por exemplo, zero meses de experiência). O pipeline preenche essas lacunas pela mediana aprendida somente no treino (seção 6), aplicada igual à validação e ao teste, para não vazar informação. Como a maior ausência fica em 6,07%, o impacto esperado é pequeno, mas a entrada mais afetada — experiência do operador — é também uma das quatro com maior relação com o resultado (próxima pergunta), o que pede atenção redobrada nela.
+            """
+        ),
+        code(
+            """
+            # Ausências por entrada, já calculadas no pipeline (seção 3).
+            display(qualidade)
+            """
+        ),
+        markdown(
+            """
+            ### Como o resultado varia entre os casos e os grupos?
+
+            O tempo de troca varia bastante entre casos individuais: de cerca de 20 a quase 60 minutos, com média de **35,90 minutos** e mediana de **34,70 minutos** — a diferença entre as duas mostra uma cauda de casos mais longos, visível no histograma (gráfico 01).
+
+            Entre grupos, a variação não é uniforme:
+
+            - **Mudar de família de produto** é o fator com maior diferença: média de **41,46 minutos** quando muda contra **31,64 minutos** quando não muda, e **42,7%** das trocas com mudança de família ultrapassam 42 minutos, contra **15,3%** sem mudança — quase o triplo do risco.
+            - **Entre as linhas SMT**, a SMT3 teve o maior tempo médio (**38,33 min**) e a maior taxa de trocas demoradas (**33,4%**), enquanto SMT1 e SMT2 ficaram próximas uma da outra (34,31 e 34,88 min; 23,6% e 24,1%).
+            - **Entre turnos**, a variação foi pequena: médias entre 35,42 e 36,28 minutos e taxas de trocas demoradas entre 25,9% e 27,8%, sem um turno que se destaque como nas outras duas comparações.
+
+            O gráfico 03 (risco por kit preparado e família) mostra esse cruzamento: o risco de troca demorada sobe quando o kit está pouco preparado e sobe ainda mais quando, ao mesmo tempo, há mudança de família.
+            """
+        ),
+        code(
+            """
+            # Variação do tempo médio e da taxa de trocas demoradas por grupo.
+            for coluna in ["linha_smt", "turno", "muda_familia"]:
+                tabela_grupo = dados.groupby(coluna, observed=True).agg(
+                    casos=("tempo_troca_min", "size"),
+                    tempo_medio_min=("tempo_troca_min", "mean"),
+                    pct_demorada=("troca_demorada", "mean"),
+                )
+                tabela_grupo["pct_demorada"] = (100 * tabela_grupo["pct_demorada"]).round(1)
+                print(f"Variação por {coluna}:")
+                display(tabela_grupo.round(2))
+            """
+        ),
+        markdown(
+            """
+            ### Quais características apresentam relações com o resultado e parecem úteis para fazer previsões? Que gráficos ou tabelas sustentam essa interpretação?
+
+            A importância de característica da árvore de regressão (gráfico 07) mostra que quatro entradas concentram quase toda a capacidade preditiva: **quantidade de alimentadores a trocar** (50,5% da importância), **percentual do kit já preparado** (19,0%), **mudança de família de produto** (cerca de 19,8%, somando as duas categorias) e **experiência do operador em meses** (9,5%). Juntas, essas quatro entradas respondem por mais de 98% da importância total. Tamanho do lote, turno e linha SMT contribuíram muito pouco ou nada.
+
+            Essa ordem é coerente com a leitura exploratória da seção 5 (gráficos 02 e 03): mais alimentadores a trocar e kit menos preparado aparecem associados a tempos maiores, e mudar de família eleva o risco principalmente quando o kit está pouco preparado. A pergunta anterior mostra a mesma hierarquia nos números agregados por grupo. São associações observadas nos dados de treino, não relações causais comprovadas.
+            """
+        ),
+        code(
+            """
+            # Importância de característica da árvore de regressão escolhida (gráfico 07).
+            display(resultados["regression_importance"].round(3))
+            """
+        ),
+        markdown(
+            """
+            ### O modelo erra menos que uma referência simples? Qual foi a diferença?
+
+            Sim, nas duas tarefas o modelo escolhido errou menos que a referência simples, sempre medido no teste reservado:
+
+            - Na **regressão**, a árvore de profundidade 7 teve MAE de **2,66 minutos**, contra **8,14 minutos** da referência pela mediana do treino — redução de **67,4%** no erro, com R² de 0,884.
+            - Na **classificação**, a referência (sempre prever a classe mais comum) não encontra nenhuma troca demorada, ou seja, recall de **0%**. A árvore de profundidade 4 alcançou recall de **87,3%**, precisão de **74,2%** e F1 de **80,2%** — uma diferença grande, porque a referência simplesmente não serve para a decisão operacional de priorizar apoio.
+            """
+        ),
+        markdown(
+            """
+            ### Quantos casos com problema o modelo encontra, quantos deixa passar e quantos falsos alarmes produz?
+
+            No teste, entre as **102** trocas realmente demoradas, o classificador encontrou **89** (verdadeiros positivos) e deixou passar **13** (falsos negativos). Entre as **301** trocas realmente dentro do limite, ele gerou **31** falsos alarmes (falsos positivos) e classificou corretamente **270** como não demoradas (verdadeiros negativos). Isso dá recall de **87,3%** (89 de 102) e precisão de **74,2%** (89 dos 120 alertas emitidos), conforme o gráfico 06 (matriz de confusão).
+            """
+        ),
+        markdown(
+            """
+            ### Que decisão os resultados poderiam apoiar? O que os dados não permitem concluir?
+
+            **Decisão apoiada:** antes de cada troca, ordenar os casos pela probabilidade de ultrapassar 42 minutos e direcionar primeiro o apoio disponível (pessoas, preparação extra de kit) para os casos de maior risco, usando o tempo previsto pela árvore de regressão como apoio ao planejamento da linha (seção 9).
+
+            **O que os dados não permitem concluir:**
+
+            - **Causa e efeito:** associações como "kit menos preparado aumenta o tempo" são leituras observacionais, não testadas com um experimento controlado.
+            - **Desempenho em produção real:** a base é sintética, preparada para o curso, então o MAE de 2,66 minutos e o recall de 87,3% não garantem o mesmo resultado numa fábrica real.
+            - **Validade ao longo do tempo:** mudanças no processo, na equipe ou nos produtos podem reduzir o desempenho do modelo, algo que este estudo não acompanha.
+            - **Garantia por caso individual:** o MAE e o recall são médias do teste; algumas trocas específicas erram mais do que esses números sugerem, e o modelo ainda deixa passar parte das trocas demoradas (13 de 102 no teste).
+            """
+        ),
     ]
     nbf.write(notebook, OUTPUT)
     print(f"Notebook criado em: {OUTPUT}")
