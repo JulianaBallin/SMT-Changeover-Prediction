@@ -11,6 +11,7 @@ from smt_changeover.analysis import (
     REGRESSION_TARGET,
     VALID_RANGES,
     clean_data,
+    load_clean_data,
     read_raw_data,
     temporal_split,
     train_and_evaluate,
@@ -18,7 +19,7 @@ from smt_changeover.analysis import (
 
 
 def test_cleaning_contract() -> None:
-    """Cleaning must preserve valid cases and enforce the documented contract."""
+    """Cleaning rules (legacy raw file) must enforce the documented contract."""
     raw = read_raw_data()
     clean, audit, suspicious, quality = clean_data(raw)
 
@@ -40,9 +41,22 @@ def test_cleaning_contract() -> None:
         assert observed.between(lower, upper).all()
 
 
+def test_professor_clean_base_is_consistent() -> None:
+    """The professor's clean base must load with the documented structure."""
+    clean, audit, suspicious, quality = load_clean_data()
+
+    assert len(clean) == 2043
+    assert audit.empty and suspicious.empty
+    assert int(clean[CLASSIFICATION_TARGET].sum()) == 507
+    assert quality.loc["experiencia_operador_meses", "Ausentes"] == 124
+    assert clean[CLASSIFICATION_TARGET].eq(
+        clean[REGRESSION_TARGET].gt(42).astype(int)
+    ).all()
+
+
 def test_temporal_split_keeps_periods_ordered() -> None:
     """The final test must contain only dates after validation."""
-    clean, _, _, _ = clean_data(read_raw_data())
+    clean, _, _, _ = load_clean_data()
     split, train_end, validation_end = temporal_split(clean)
 
     assert split.value_counts().to_dict() == {
@@ -58,7 +72,7 @@ def test_temporal_split_keeps_periods_ordered() -> None:
 
 def test_selected_models_beat_simple_references() -> None:
     """Selected trees must add measurable value on the reserved test."""
-    clean, _, _, _ = clean_data(read_raw_data())
+    clean, _, _, _ = load_clean_data()
     split, _, _ = temporal_split(clean)
     results = train_and_evaluate(clean, split)
 
@@ -67,11 +81,11 @@ def test_selected_models_beat_simple_references() -> None:
     assert regression.loc[best_regression, "MAE"] < regression.loc[
         "Referência mediana", "MAE"
     ]
-    assert np.isclose(regression.loc[best_regression, "MAE"], 2.655604, atol=1e-5)
+    assert np.isclose(regression.loc[best_regression, "MAE"], 2.116450, atol=1e-5)
 
     classification = results["classification_test"].set_index("Modelo")
     best_classifier = results["best_classification_name"]
     assert classification.loc[best_classifier, "Recall"] > 0.85
-    assert classification.loc[best_classifier, "VP"] == 89
-    assert classification.loc[best_classifier, "FN"] == 13
-    assert classification.loc[best_classifier, "FP"] == 31
+    assert classification.loc[best_classifier, "VP"] == 101
+    assert classification.loc[best_classifier, "FN"] == 1
+    assert classification.loc[best_classifier, "FP"] == 24
