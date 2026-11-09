@@ -36,7 +36,7 @@ PREVIEW_DIR = PROJECT_DIR / "outputs" / "previews"
 OUTPUT = PROJECT_DIR / "docs" / "apresentacao" / "apresentacao_smt_em_tempo.pptx"
 SUMMARY_PATH = PROJECT_DIR / "outputs" / "metrics" / "resumo_resultados.json"
 FONT = "Noto Sans"
-TOTAL_SLIDES = 13
+TOTAL_SLIDES = 15
 
 
 def rgb(color: str) -> RGBColor:
@@ -334,6 +334,46 @@ def add_metric(slide, value: str, label: str, x: float, y: float, width: float, 
         size=10.5,
         color=INK,
         align=PP_ALIGN.CENTER,
+    )
+
+
+def add_qa_card(
+    slide,
+    x: float,
+    y: float,
+    width: float,
+    height: float,
+    number: str,
+    question: str,
+    answer: str,
+    *,
+    accent: str,
+    fill: str,
+) -> None:
+    """Add one compact question-and-answer card for the general-questions slides."""
+    add_card(slide, x, y, width, height, color=fill, line=MINT)
+    add_shape(slide, MSO_SHAPE.RECTANGLE, x + 0.22, y + 0.18, width - 0.44, 0.045, accent)
+    add_text(slide, number, x + 0.22, y + 0.30, width - 0.44, 0.22, size=10, color=accent, bold=True)
+    add_text(
+        slide,
+        question,
+        x + 0.22,
+        y + 0.54,
+        width - 0.44,
+        0.62,
+        size=14,
+        color=TEAL,
+        bold=True,
+    )
+    add_text(
+        slide,
+        answer,
+        x + 0.22,
+        y + 1.16,
+        width - 0.44,
+        height - 1.32,
+        size=12,
+        color=INK,
     )
 
 
@@ -952,6 +992,96 @@ def slide_final_answers(prs: Presentation, summary: dict) -> None:
     add_footer(slide, 12)
 
 
+def slide_general_questions_1(prs: Presentation) -> None:
+    """Answer the first four general course questions."""
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    set_background(slide, CREAM)
+    add_doodles(slide, 1)
+    add_header(slide, "12", "Perguntas gerais do curso (1/2)")
+    cards = [
+        (
+            "01",
+            "Problemas de registro",
+            "8 tipos de erro corrigidos: duplicatas, grafias, espaços, vírgulas, código 9999, datas e medidas inválidas. Só o campo afetado virou ausente; cada correção foi auditada em uma tabela.",
+            CORAL,
+            "#F8D2C8",
+        ),
+        (
+            "02",
+            "Informações ausentes",
+            "5 entradas numéricas ficaram com ausências, até 6,07% em experiência do operador. Preenchidas pela mediana do treino, sem afetar os alvos nem vazar dados do teste.",
+            BLUE,
+            LIGHT_BLUE,
+        ),
+        (
+            "03",
+            "Variação entre grupos",
+            "Mudar de família quase triplica o risco (42,7% × 15,3%). A linha SMT3 tem mais trocas demoradas (33,4%) que SMT1 e SMT2 (≈24%). Turno varia pouco.",
+            GREEN,
+            MINT,
+        ),
+        (
+            "04",
+            "Características mais úteis",
+            "Alimentadores a trocar (50,5%), kit preparado (19,0%), mudança de família (19,8%) e experiência (9,5%) concentram 98% da importância (gráfico 07).",
+            YELLOW,
+            "#FBE8B6",
+        ),
+    ]
+    for index, (number, question, answer, accent, fill) in enumerate(cards):
+        column = index % 2
+        row = index // 2
+        x = 0.70 + column * 6.05
+        y = 1.35 + row * 2.75
+        add_qa_card(slide, x, y, 5.75, 2.50, number, question, answer, accent=accent, fill=fill)
+    add_footer(slide, 13)
+
+
+def slide_general_questions_2(prs: Presentation) -> None:
+    """Answer the remaining four general course questions."""
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    set_background(slide, CREAM)
+    add_doodles(slide, 2)
+    add_header(slide, "13", "Perguntas gerais do curso (2/2)")
+    cards = [
+        (
+            "05",
+            "Modelo vs. referência simples",
+            "MAE de 2,66 min contra 8,14 min da mediana (−67,4%). Recall de 87,3% contra 0% da classe majoritária na classificação.",
+            TEAL,
+            "#FFFFFF",
+        ),
+        (
+            "06",
+            "Acertos, perdas e alarmes",
+            "No teste: 89 das 102 trocas demoradas encontradas, 13 perdidas e 31 falsos alarmes entre as trocas dentro do limite.",
+            CORAL,
+            "#F8D2C8",
+        ),
+        (
+            "07",
+            "Decisão apoiada",
+            "Ordenar as próximas trocas pelo risco e priorizar o apoio humano disponível para os casos de maior probabilidade de atraso.",
+            GREEN,
+            MINT,
+        ),
+        (
+            "08",
+            "O que os dados não permitem concluir",
+            "Relação de causa e efeito, desempenho em fábrica real (dados sintéticos) e garantia de erro para cada caso individual.",
+            BLUE,
+            LIGHT_BLUE,
+        ),
+    ]
+    for index, (number, question, answer, accent, fill) in enumerate(cards):
+        column = index % 2
+        row = index // 2
+        x = 0.70 + column * 6.05
+        y = 1.35 + row * 2.75
+        add_qa_card(slide, x, y, 5.75, 2.50, number, question, answer, accent=accent, fill=fill)
+    add_footer(slide, 14)
+
+
 def slide_thanks(prs: Presentation) -> None:
     """Close the deck with a concise thank-you slide."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
@@ -996,7 +1126,7 @@ def slide_thanks(prs: Presentation) -> None:
         bold=True,
         align=PP_ALIGN.CENTER,
     )
-    add_footer(slide, 13, color=CREAM)
+    add_footer(slide, 15, color=CREAM)
 
 
 def build_presentation() -> None:
@@ -1018,6 +1148,8 @@ def build_presentation() -> None:
     slide_deliverables(presentation)
     slide_conclusion(presentation)
     slide_final_answers(presentation, summary)
+    slide_general_questions_1(presentation)
+    slide_general_questions_2(presentation)
     slide_thanks(presentation)
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
